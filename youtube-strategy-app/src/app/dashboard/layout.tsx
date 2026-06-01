@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
+import { OnboardingModal } from "@/components/shared/OnboardingModal";
 import type { AppUser } from "@/types";
 import type { Metadata } from "next";
 
@@ -75,6 +76,7 @@ export default async function DashboardLayout({
       <div className="pt-16 lg:pl-60 min-h-screen">
         <div className="p-4 lg:p-8">{children}</div>
       </div>
+      <OnboardingModal />
     </div>
   );
 }
