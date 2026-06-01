@@ -1,15 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useUserStore } from "@/store/useUserStore";
-
-interface RoadmapTask {
-  id: string;
-  phase: number;
-  step: number;
-  description: string;
-  completedAt: string | null;
-}
+import { useActionItems } from "@/hooks/useActionItems";
 
 interface PhaseConfig {
   phase: number;
@@ -21,13 +12,13 @@ interface PhaseConfig {
 }
 
 const PHASE_CONFIG: PhaseConfig[] = [
-  { phase: 0, title: "Validación",           subtitle: "Confirmar que el nicho tiene demanda real",              days: "Días 1-3",   color: "var(--accent-primary)",   emoji: "🔍" },
+  { phase: 0, title: "Validación",              subtitle: "Confirmar que el nicho tiene demanda real",          days: "Días 1-3",   color: "var(--accent-primary)",   emoji: "🔍" },
   { phase: 1, title: "Setup & Primeros Videos", subtitle: "Crear el canal y publicar los primeros 3 videos",    days: "Días 4-14",  color: "var(--accent-secondary)", emoji: "🚀" },
-  { phase: 2, title: "Consistencia y Crecimiento", subtitle: "2-3 videos por semana y optimización continua",   days: "Días 15-60", color: "var(--accent-success)",   emoji: "📈" },
-  { phase: 3, title: "Monetización",          subtitle: "YPP + múltiples fuentes de ingresos",                  days: "Días 61-90+",color: "var(--accent-warning)",   emoji: "💰" },
+  { phase: 2, title: "Consistencia y Crecimiento", subtitle: "2-3 videos por semana y optimización continua",  days: "Días 15-60", color: "var(--accent-success)",   emoji: "📈" },
+  { phase: 3, title: "Monetización",            subtitle: "YPP + múltiples fuentes de ingresos",               days: "Días 61-90+",color: "var(--accent-warning)",   emoji: "💰" },
 ];
 
-const TOOL_TIPS: Record<number, Record<number, string>> = {
+const TOOL_MAP: Record<number, Record<number, string>> = {
   0: { 1: "NEXUS Evaluador", 2: "viralyt.ai", 3: "YouTube", 4: "NEXUS + YouTube", 5: "Notion" },
   1: { 1: "YouTube Studio", 2: "Canva", 3: "Claude AI + CapCut", 4: "Canva + YT Studio", 5: "YouTube Analytics" },
   2: { 1: "Claude AI + CapCut", 2: "Canva + YT Studio", 3: "YouTube Analytics", 4: "Orgánico", 5: "NEXUS" },
@@ -35,81 +26,9 @@ const TOOL_TIPS: Record<number, Record<number, string>> = {
 };
 
 export function RoadmapTimeline() {
-  const [tasks, setTasks] = useState<RoadmapTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<string | null>(null);
-  const { updateMetrics } = useUserStore();
+  const { items, isLoading, progress, toggleTask } = useActionItems();
 
-  const loadTasks = useCallback(async () => {
-    try {
-      const res = await fetch("/api/action-items");
-      if (res.ok) {
-        const data = await res.json() as { items: RoadmapTask[] };
-        setTasks(data.items);
-        updateProgress(data.items);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { void loadTasks(); }, [loadTasks]);
-
-  function updateProgress(items: RoadmapTask[]) {
-    const completed = items.filter((t) => t.completedAt !== null).length;
-    const progress = items.length > 0 ? Math.round((completed / items.length) * 100) : 0;
-    updateMetrics({ roadmapProgress: progress });
-  }
-
-  async function toggleTask(taskId: string, currentlyCompleted: boolean) {
-    const newCompleted = !currentlyCompleted;
-
-    // Optimistic update
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? { ...t, completedAt: newCompleted ? new Date().toISOString() : null }
-          : t
-      )
-    );
-
-    if (newCompleted) {
-      const task = tasks.find((t) => t.id === taskId);
-      setToast(`✅ ${task?.description.slice(0, 45)}...`);
-      setTimeout(() => setToast(null), 3000);
-    }
-
-    try {
-      const res = await fetch("/api/action-items", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: taskId, completed: newCompleted }),
-      });
-      if (res.ok) {
-        const freshRes = await fetch("/api/action-items");
-        if (freshRes.ok) {
-          const data = await freshRes.json() as { items: RoadmapTask[] };
-          setTasks(data.items);
-          updateProgress(data.items);
-        }
-      }
-    } catch {
-      // Revert on error
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId
-            ? { ...t, completedAt: currentlyCompleted ? new Date().toISOString() : null }
-            : t
-        )
-      );
-    }
-  }
-
-  const totalProgress = tasks.length > 0
-    ? Math.round((tasks.filter((t) => t.completedAt !== null).length / tasks.length) * 100)
-    : 0;
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-4 animate-pulse">
         {[0, 1, 2, 3].map((i) => (
@@ -121,48 +40,38 @@ export function RoadmapTimeline() {
 
   return (
     <div className="space-y-6">
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl text-sm font-medium"
-          style={{ backgroundColor: "var(--accent-success)", color: "white" }}
-        >
-          {toast}
-        </div>
-      )}
-
       {/* Progress */}
       <div className="rounded-xl p-5 border" style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-default)" }}>
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Progreso total</span>
-          <span className="text-sm font-bold" style={{ color: "var(--accent-primary)" }}>{totalProgress}%</span>
+          <span className="text-sm font-bold" style={{ color: "var(--accent-primary)" }}>{progress}%</span>
         </div>
         <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-card)" }}>
           <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${totalProgress}%`, background: "linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))" }}
+            className="h-full rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))" }}
           />
         </div>
         <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-          {tasks.filter((t) => t.completedAt !== null).length} de {tasks.length} tareas completadas
+          {items.filter((t) => t.completedAt !== null).length} de {items.length} tareas completadas
         </p>
       </div>
 
-      {/* Phases */}
+      {/* Timeline */}
       <div className="relative">
         <div className="absolute left-5 top-6 bottom-6 w-0.5" style={{ backgroundColor: "var(--border-default)" }} />
         <div className="space-y-6">
           {PHASE_CONFIG.map((cfg) => {
-            const phaseTasks = tasks.filter((t) => t.phase === cfg.phase);
+            const phaseTasks = items.filter((t) => t.phase === cfg.phase);
             const phaseCompleted = phaseTasks.filter((t) => t.completedAt !== null).length;
             const phasePct = phaseTasks.length > 0 ? Math.round((phaseCompleted / phaseTasks.length) * 100) : 0;
             const isComplete = phaseTasks.length > 0 && phaseCompleted === phaseTasks.length;
 
             return (
               <div key={cfg.phase} className="relative pl-14">
-                {/* Phase dot */}
+                {/* Dot de fase */}
                 <div
-                  className="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center text-lg z-10 border-2 transition-all"
+                  className="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center text-lg z-10 border-2 transition-all duration-300"
                   style={{
                     backgroundColor: isComplete ? cfg.color : "var(--bg-primary)",
                     borderColor: cfg.color,
@@ -201,15 +110,20 @@ export function RoadmapTimeline() {
                     </div>
                   </div>
 
-                  {/* Tasks */}
+                  {/* Tareas */}
                   <div className="p-3 space-y-2">
+                    {phaseTasks.length === 0 && (
+                      <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>
+                        Las tareas aparecen al evaluar tu primer nicho
+                      </p>
+                    )}
                     {phaseTasks.map((task) => {
                       const completed = task.completedAt !== null;
-                      const tool = TOOL_TIPS[task.phase]?.[task.step];
+                      const tool = TOOL_MAP[task.phase]?.[task.step];
                       return (
                         <button
                           key={task.id}
-                          onClick={() => void toggleTask(task.id, completed)}
+                          onClick={() => toggleTask(task.id, completed)}
                           className="w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-all hover:opacity-90 active:scale-[0.99]"
                           style={{
                             backgroundColor: completed ? `${cfg.color}10` : "var(--bg-card)",
@@ -217,7 +131,7 @@ export function RoadmapTimeline() {
                           }}
                         >
                           <div
-                            className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all"
+                            className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all duration-200"
                             style={{
                               backgroundColor: completed ? cfg.color : "transparent",
                               border: `2px solid ${completed ? cfg.color : "var(--text-muted)"}`,
@@ -231,7 +145,7 @@ export function RoadmapTimeline() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-sm font-medium"
+                              className="text-sm font-medium leading-snug"
                               style={{
                                 color: completed ? "var(--text-muted)" : "var(--text-primary)",
                                 textDecoration: completed ? "line-through" : "none",
@@ -248,12 +162,6 @@ export function RoadmapTimeline() {
                         </button>
                       );
                     })}
-
-                    {phaseTasks.length === 0 && (
-                      <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
-                        Las tareas se generan al evaluar tu primer nicho
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
