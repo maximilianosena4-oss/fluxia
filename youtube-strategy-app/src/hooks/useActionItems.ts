@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { showMomentumToast } from "@/components/shared/MomentumToast";
 
 interface ActionItem {
   id: string;
@@ -60,7 +61,7 @@ export function useActionItems() {
       toast.error("Error al actualizar la tarea");
     },
     onSuccess: (_data, { completed }) => {
-      if (completed) toast.success("¡Tarea completada! 🎯");
+      if (completed) showMomentumToast("taskComplete");
       queryClient.invalidateQueries({ queryKey: ["action-items"] });
     },
   });
