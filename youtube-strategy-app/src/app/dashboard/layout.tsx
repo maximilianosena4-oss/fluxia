@@ -16,21 +16,30 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
 
-  // Asegurar que el usuario existe en DB (primer login)
+  // Verificar sesión válida (id viene del JWT callback)
+  if (!session?.user?.id || !session.user.email) {
+    redirect("/login");
+  }
+
+  // Upsert del usuario en DB (activo en cada visita)
   const dbUser = await prisma.user.upsert({
-    where: { id: session.user.id },
-    update: { lastActive: new Date() },
+    where: { email: session.user.email },
+    update: {
+      id: session.user.id,
+      name: session.user.name ?? undefined,
+      image: session.user.image ?? undefined,
+      lastActive: new Date(),
+    },
     create: {
       id: session.user.id,
-      email: session.user.email ?? "",
+      email: session.user.email,
       name: session.user.name ?? null,
       image: session.user.image ?? null,
     },
   });
 
-  // Asegurar que tiene al menos un canal activo
+  // Asegurar canal activo para el usuario
   const channelCount = await prisma.channel.count({
     where: { userId: dbUser.id },
   });
@@ -41,21 +50,11 @@ export default async function DashboardLayout({
   }
 
   // Progreso del roadmap desde DB
-  const actionItems = await prisma.actionItem.findMany({
-    where: {
-      channel: { userId: dbUser.id },
-    },
-    select: { completedAt: true },
-  });
-
-  const roadmapProgress =
-    actionItems.length > 0
-      ? Math.round(
-          (actionItems.filter((a) => a.completedAt !== null).length /
-            actionItems.length) *
-            100
-        )
-      : 0;
+  const [total, done] = await Promise.all([
+    prisma.actionItem.count({ where: { channel: { userId: dbUser.id } } }),
+    prisma.actionItem.count({ where: { channel: { userId: dbUser.id }, completedAt: { not: null } } }),
+  ]);
+  const roadmapProgress = total > 0 ? Math.round((done / total) * 100) : 0;
 
   const user: AppUser = {
     id: dbUser.id,
@@ -68,18 +67,11 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--bg-primary)" }}
-    >
-      {/* Sidebar visible solo en desktop */}
+    <div className="min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
       <div className="hidden lg:block">
         <Sidebar />
       </div>
-
       <Navbar user={user} roadmapProgress={roadmapProgress} />
-
-      {/* Content: sin offset en mobile, con offset en desktop */}
       <div className="pt-16 lg:pl-60 min-h-screen">
         <div className="p-4 lg:p-8">{children}</div>
       </div>

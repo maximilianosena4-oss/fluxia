@@ -1,22 +1,20 @@
-// NextAuth.js v5 — Configuración de autenticación
-// Google OAuth + PrismaAdapter (sesiones en DB) + HttpOnly cookies
+// NextAuth.js v5 — JWT puro (sin PrismaAdapter)
+// El usuario se guarda en DB manualmente en el callback jwt()
+// Sesión en cookie HttpOnly, firmada con AUTH_SECRET
 
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  // Con PrismaAdapter usamos sesiones en DB (más seguro que JWT puro)
-  // Las cookies de sesión son HttpOnly automáticamente con NextAuth v5
   session: {
+    strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7, // 7 días
   },
   pages: {
@@ -24,9 +22,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   callbacks: {
-    async session({ session, user }) {
-      if (user?.id) {
-        session.user.id = user.id;
+    async jwt({ token, user, account }) {
+      // Solo en el primer login (account existe)
+      if (account?.provider === "google" && user?.email) {
+        try {
+          const dbUser = await prisma.user.upsert({
+            where: { email: user.email },
+            update: {
+              name: user.name ?? undefined,
+              image: user.image ?? undefined,
+              lastActive: new Date(),
+            },
+            create: {
+              email: user.email,
+              name: user.name ?? null,
+              image: user.image ?? null,
+            },
+          });
+          token.userId = dbUser.id;
+        } catch {
+          // Si la DB no está disponible, usar el sub de Google como fallback
+          token.userId = token.sub;
+        }
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (token.userId && session.user) {
+        session.user.id = token.userId as string;
       }
       return session;
     },

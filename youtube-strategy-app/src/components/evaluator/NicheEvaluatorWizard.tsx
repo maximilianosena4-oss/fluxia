@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { WizardStep } from "./WizardStep";
 import { ScoreCard } from "./ScoreCard";
 import { Button } from "@/components/ui/button";
+import { ConfettiEffect } from "@/components/shared/ConfettiEffect";
 import {
   useEvaluatorStore,
   type ChannelType,
@@ -495,6 +496,10 @@ export function NicheEvaluatorWizard() {
   if (store.currentStep === 5 && store.scoreBreakdown && store.verdict) {
     return (
       <WizardStep step={5} totalSteps={5} title="El veredicto" subtitle="Scoring calculado automáticamente con los datos reales.">
+        <ConfettiEffect
+          trigger={store.verdict === "GO"}
+          variant={store.verdict === "GO" ? "success" : "gold"}
+        />
         <div className="space-y-6">
           <ScoreCard
             score={store.scoreBreakdown}

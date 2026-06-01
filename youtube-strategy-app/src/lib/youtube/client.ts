@@ -1,17 +1,18 @@
 // YouTube Data API v3 Client
-// Usa API key real si YOUTUBE_API_KEY está disponible, sino devuelve mocks.
+// Usa API key real si YOUTUBE_API_KEY está disponible, sino mock.
+// Cache de 6 horas en Redis para minimizar consumo de quota.
 
 import { cacheGet, cacheSet } from "@/lib/db/redis";
+import { consumeQuota } from "@/lib/youtube/quota";
 import type {
   YouTubeChannel,
   YouTubeVideo,
-  YouTubeSearchResult,
 } from "@/types/youtube";
 
 const BASE_URL = "https://www.googleapis.com/youtube/v3";
-const CACHE_TTL_SECONDS = 6 * 60 * 60; // 6 horas (según brief)
+const CACHE_TTL = 6 * 60 * 60; // 6 horas
 
-function hasApiKey(): boolean {
+export function hasApiKey(): boolean {
   return !!process.env.YOUTUBE_API_KEY;
 }
 
@@ -26,14 +27,43 @@ async function ytFetch<T>(
   }
 
   const res = await fetch(url.toString(), {
-    next: { revalidate: CACHE_TTL_SECONDS },
+    headers: { "Accept": "application/json" },
+    next: { revalidate: CACHE_TTL },
   });
 
   if (!res.ok) {
-    throw new Error(`YouTube API error: ${res.status} ${res.statusText}`);
+    const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
+    throw new Error(`YouTube API ${res.status}: ${err?.error?.message ?? res.statusText}`);
   }
+
   return res.json() as Promise<T>;
 }
+
+type YTSearchItem = {
+  id: { videoId?: string; channelId?: string };
+  snippet: {
+    title: string;
+    description: string;
+    channelId: string;
+    channelTitle: string;
+    publishedAt: string;
+    thumbnails: { medium?: { url: string }; high?: { url: string } };
+  };
+};
+
+type YTVideoItem = {
+  id: string;
+  snippet: { title: string; description: string; channelId: string; channelTitle: string; publishedAt: string; thumbnails: { medium?: { url: string } }; tags?: string[] };
+  statistics: { viewCount?: string; likeCount?: string; commentCount?: string };
+  contentDetails: { duration: string };
+};
+
+type YTChannelItem = {
+  id: string;
+  snippet: { title: string; description: string; publishedAt: string; thumbnails: { medium?: { url: string } }; country?: string };
+  statistics: { subscriberCount?: string; videoCount?: string; viewCount?: string };
+  brandingSettings?: { channel?: { keywords?: string } };
+};
 
 export async function searchVideos(
   query: string,
@@ -44,130 +74,174 @@ export async function searchVideos(
   const cached = await cacheGet<YouTubeVideo[]>(cacheKey);
   if (cached) return cached;
 
-  if (!hasApiKey()) return getMockVideos(query);
+  if (!hasApiKey()) return getMockVideos(query, maxResults);
 
-  const data = await ytFetch<{ items: Array<Record<string, unknown>> }>("search", {
-    part: "snippet",
-    q: query,
-    type: "video",
-    relevanceLanguage: language,
-    maxResults: maxResults.toString(),
-    order: "viewCount",
-  });
+  const quota = await consumeQuota("search");
+  if (!quota.allowed) {
+    console.warn("[YouTube] Quota agotada, usando mock");
+    return getMockVideos(query, maxResults);
+  }
 
-  const videos: YouTubeVideo[] = data.items.map((item: Record<string, unknown>) => {
-    const snippet = item.snippet as Record<string, unknown>;
-    const id = item.id as Record<string, unknown>;
-    return {
-      id: id.videoId as string,
-      title: snippet.title as string,
-      description: (snippet.description as string) ?? "",
-      channelId: snippet.channelId as string,
-      channelTitle: snippet.channelTitle as string,
-      thumbnailUrl: (snippet.thumbnails as Record<string, Record<string, string>>).medium?.url ?? "",
-      viewCount: 0,
-      likeCount: 0,
-      commentCount: 0,
-      duration: "",
-      publishedAt: snippet.publishedAt as string,
-      tags: [],
-    };
-  });
+  try {
+    const data = await ytFetch<{ items: YTSearchItem[] }>("search", {
+      part: "snippet",
+      q: query,
+      type: "video",
+      relevanceLanguage: language,
+      maxResults: maxResults.toString(),
+      order: "viewCount",
+      videoDuration: "medium",
+    });
 
-  await cacheSet(cacheKey, videos, CACHE_TTL_SECONDS);
-  return videos;
+    // Obtener estadísticas en batch (1 sola llamada a videos.list)
+    const videoIds = data.items.map((i) => i.id.videoId).filter(Boolean).join(",");
+    let statsMap: Record<string, { viewCount: number; likeCount: number; commentCount: number; duration: string }> = {};
+
+    if (videoIds) {
+      await consumeQuota("videos");
+      const statsData = await ytFetch<{ items: YTVideoItem[] }>("videos", {
+        part: "statistics,contentDetails",
+        id: videoIds,
+      });
+      statsMap = Object.fromEntries(
+        statsData.items.map((v) => [
+          v.id,
+          {
+            viewCount: parseInt(v.statistics.viewCount ?? "0"),
+            likeCount: parseInt(v.statistics.likeCount ?? "0"),
+            commentCount: parseInt(v.statistics.commentCount ?? "0"),
+            duration: v.contentDetails.duration,
+          },
+        ])
+      );
+    }
+
+    const videos: YouTubeVideo[] = data.items
+      .filter((item) => item.id.videoId)
+      .map((item) => {
+        const stats = statsMap[item.id.videoId!] ?? { viewCount: 0, likeCount: 0, commentCount: 0, duration: "" };
+        return {
+          id: item.id.videoId!,
+          title: item.snippet.title,
+          description: item.snippet.description ?? "",
+          channelId: item.snippet.channelId,
+          channelTitle: item.snippet.channelTitle,
+          thumbnailUrl: item.snippet.thumbnails.high?.url ?? item.snippet.thumbnails.medium?.url ?? "",
+          viewCount: stats.viewCount,
+          likeCount: stats.likeCount,
+          commentCount: stats.commentCount,
+          duration: stats.duration,
+          publishedAt: item.snippet.publishedAt,
+          tags: [],
+        };
+      });
+
+    await cacheSet(cacheKey, videos, CACHE_TTL);
+    return videos;
+  } catch (err) {
+    console.error("[YouTube] searchVideos error:", err);
+    return getMockVideos(query, maxResults);
+  }
 }
 
-export async function getChannelStats(
-  channelId: string
-): Promise<YouTubeChannel | null> {
+export async function getChannelStats(channelId: string): Promise<YouTubeChannel | null> {
   const cacheKey = `yt:channel:${channelId}`;
   const cached = await cacheGet<YouTubeChannel>(cacheKey);
   if (cached) return cached;
 
   if (!hasApiKey()) return getMockChannel(channelId);
 
-  const data = await ytFetch<{ items: Array<Record<string, unknown>> }>("channels", {
-    part: "snippet,statistics,brandingSettings",
-    id: channelId,
-  });
+  const quota = await consumeQuota("channels");
+  if (!quota.allowed) return getMockChannel(channelId);
 
-  if (!data.items?.length) return null;
+  try {
+    const data = await ytFetch<{ items: YTChannelItem[] }>("channels", {
+      part: "snippet,statistics,brandingSettings",
+      id: channelId,
+    });
 
-  const item = data.items[0];
-  const snippet = item.snippet as Record<string, unknown>;
-  const stats = item.statistics as Record<string, string>;
-  const branding = item.brandingSettings as Record<string, Record<string, string>>;
+    if (!data.items?.length) return null;
+    const item = data.items[0];
 
-  const channel: YouTubeChannel = {
-    id: item.id as string,
-    title: snippet.title as string,
-    description: (snippet.description as string) ?? "",
-    subscriberCount: parseInt(stats.subscriberCount ?? "0"),
-    videoCount: parseInt(stats.videoCount ?? "0"),
-    viewCount: parseInt(stats.viewCount ?? "0"),
-    thumbnailUrl: (snippet.thumbnails as Record<string, Record<string, string>>).medium?.url ?? "",
-    country: snippet.country as string | null,
-    keywords: branding?.channel?.keywords?.split(",") ?? [],
-    publishedAt: snippet.publishedAt as string,
-  };
+    const channel: YouTubeChannel = {
+      id: item.id,
+      title: item.snippet.title,
+      description: item.snippet.description ?? "",
+      subscriberCount: parseInt(item.statistics.subscriberCount ?? "0"),
+      videoCount: parseInt(item.statistics.videoCount ?? "0"),
+      viewCount: parseInt(item.statistics.viewCount ?? "0"),
+      thumbnailUrl: item.snippet.thumbnails.medium?.url ?? "",
+      country: item.snippet.country ?? null,
+      keywords: item.brandingSettings?.channel?.keywords?.split(",") ?? [],
+      publishedAt: item.snippet.publishedAt,
+    };
 
-  await cacheSet(cacheKey, channel, CACHE_TTL_SECONDS);
-  return channel;
+    await cacheSet(cacheKey, channel, CACHE_TTL);
+    return channel;
+  } catch (err) {
+    console.error("[YouTube] getChannelStats error:", err);
+    return getMockChannel(channelId);
+  }
 }
 
-export async function searchChannels(
-  query: string,
-  maxResults = 5
-): Promise<YouTubeChannel[]> {
-  if (!hasApiKey()) return [getMockChannel("mock1"), getMockChannel("mock2")].filter(Boolean) as YouTubeChannel[];
+export async function searchChannels(query: string, maxResults = 5): Promise<YouTubeChannel[]> {
+  if (!hasApiKey()) return Array.from({ length: 3 }, (_, i) => getMockChannel(`mock-${i}`));
 
-  const data = await ytFetch<{ items: Array<Record<string, unknown>> }>("search", {
-    part: "snippet",
-    q: query,
-    type: "channel",
-    maxResults: maxResults.toString(),
-  });
+  const quota = await consumeQuota("search");
+  if (!quota.allowed) return Array.from({ length: 3 }, (_, i) => getMockChannel(`mock-${i}`));
 
-  const channelIds = data.items.map((item: Record<string, unknown>) => {
-    const id = item.id as Record<string, unknown>;
-    return id.channelId as string;
-  });
+  try {
+    const data = await ytFetch<{ items: YTSearchItem[] }>("search", {
+      part: "snippet",
+      q: query,
+      type: "channel",
+      maxResults: maxResults.toString(),
+    });
 
-  const channels = await Promise.all(channelIds.map(getChannelStats));
-  return channels.filter(Boolean) as YouTubeChannel[];
+    const channelIds = data.items
+      .map((i) => i.id.channelId)
+      .filter(Boolean) as string[];
+
+    const channels = await Promise.allSettled(channelIds.map(getChannelStats));
+    return channels
+      .filter((r): r is PromiseFulfilledResult<YouTubeChannel> => r.status === "fulfilled" && r.value !== null)
+      .map((r) => r.value);
+  } catch {
+    return Array.from({ length: 3 }, (_, i) => getMockChannel(`mock-${i}`));
+  }
 }
 
 // ─── Mocks para desarrollo sin API key ───────────────────────
 
-function getMockVideos(query: string): YouTubeVideo[] {
-  return Array.from({ length: 5 }, (_, i) => ({
-    id: `mock-video-${i}`,
-    title: `[MOCK] Video sobre "${query}" #${i + 1}`,
-    description: "Mock video para desarrollo",
-    channelId: `mock-channel-${i}`,
-    channelTitle: `Canal Mock ${i + 1}`,
-    thumbnailUrl: `https://picsum.photos/seed/${query}${i}/320/180`,
-    viewCount: Math.floor(Math.random() * 500000) + 10000,
-    likeCount: Math.floor(Math.random() * 10000),
-    commentCount: Math.floor(Math.random() * 1000),
-    duration: "PT8M30S",
-    publishedAt: new Date(Date.now() - i * 86400000).toISOString(),
-    tags: [query, "youtube", "mock"],
+function getMockVideos(query: string, count = 5): YouTubeVideo[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `mock-video-${i}-${Date.now()}`,
+    title: `[DEMO] ${i === 0 ? "Cómo ganar $1,000 con " : i === 1 ? "El secreto de " : `${i + 1} tips de `}"${query}"`,
+    description: `Video de demostración sobre ${query}.`,
+    channelId: `mock-channel-${i % 3}`,
+    channelTitle: [`Canal Demo 1`, `Experto en ${query}`, `NEXUS Test`][i % 3],
+    thumbnailUrl: `https://picsum.photos/seed/${encodeURIComponent(query)}${i}/320/180`,
+    viewCount: [850000, 230000, 1200000, 45000, 380000][i % 5],
+    likeCount: Math.floor([850000, 230000, 1200000, 45000, 380000][i % 5] * 0.04),
+    commentCount: Math.floor([850000, 230000, 1200000, 45000, 380000][i % 5] * 0.005),
+    duration: ["PT8M32S", "PT12M15S", "PT6M45S", "PT15M20S", "PT9M10S"][i % 5],
+    publishedAt: new Date(Date.now() - i * 7 * 86400000).toISOString(),
+    tags: [query, "youtube"],
   }));
 }
 
 function getMockChannel(id: string): YouTubeChannel {
+  const idx = parseInt(id.replace(/\D/g, "") || "0") % 5;
   return {
     id,
-    title: `Canal Mock (${id})`,
-    description: "Canal de prueba para desarrollo",
-    subscriberCount: Math.floor(Math.random() * 100000) + 1000,
-    videoCount: Math.floor(Math.random() * 200) + 10,
-    viewCount: Math.floor(Math.random() * 5000000) + 100000,
-    thumbnailUrl: `https://picsum.photos/seed/${id}/88/88`,
+    title: [`Canal Finanzas Pro`, `Tech Sin Límites`, `Salud Total`, `Historia Viral`, `Demo Canal`][idx],
+    description: "Canal de demostración para desarrollo.",
+    subscriberCount: [45000, 12000, 87000, 23000, 156000][idx],
+    videoCount: [85, 34, 120, 45, 200][idx],
+    viewCount: [3500000, 890000, 7200000, 1100000, 15000000][idx],
+    thumbnailUrl: `https://picsum.photos/seed/channel${id}/88/88`,
     country: "AR",
-    keywords: ["youtube", "tutorial"],
+    keywords: ["youtube", "contenido"],
     publishedAt: new Date(Date.now() - 365 * 86400000).toISOString(),
   };
 }

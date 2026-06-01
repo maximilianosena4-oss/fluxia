@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
@@ -16,13 +16,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "YouTube Strategy Consultant — NEXUS",
+    default: "NEXUS — YouTube Strategy Consultant",
     template: "%s | NEXUS",
   },
   description:
-    "Consultora IA que te guía desde cero hasta monetizar en YouTube. Análisis de nichos, plan de acción y contenido con IA.",
-  keywords: ["youtube", "monetización", "nicho", "consultoría", "IA", "NEXUS"],
-  robots: { index: false, follow: false }, // app privada
+    "Tu consultor IA de YouTube. De cero a monetización en 90 días. Evaluación de nichos, plan de acción y generación de contenido con IA.",
+  keywords: ["youtube", "monetización", "nicho", "consultoría", "IA", "NEXUS", "canal sin rostro"],
+  authors: [{ name: "NEXUS" }],
+  creator: "Maximiliano Sena",
+  robots: { index: false, follow: false },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "NEXUS",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6366f1",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

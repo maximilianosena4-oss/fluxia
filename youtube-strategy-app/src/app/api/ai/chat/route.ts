@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         } else if (process.env.OPENAI_API_KEY) {
           await streamWithOpenAI(controller, encoder, fullPrompt, sanitized);
         } else {
-          await streamMockResponse(controller, encoder, message);
+          await streamMockResponse(controller, encoder, message, ragChunks);
         }
       } catch (err) {
         const errorMsg = `data: ${JSON.stringify({ error: "Error al generar respuesta" })}\n\n`;
@@ -163,23 +163,42 @@ async function streamWithOpenAI(
 async function streamMockResponse(
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder,
-  userMessage: string
+  userMessage: string,
+  ragChunks: import("@/types/ai").KnowledgeChunk[] = []
 ) {
-  const mockResponse = `**ANÁLISIS:** Basándome en tu pregunta sobre "${userMessage.slice(0, 50)}..." y los principios de los 5 mentores.
+  const topChunk = ragChunks[0];
+  const authorName = topChunk?.author
+    ? topChunk.author.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    : "Adrián Sáenz";
+  const sourceText = topChunk?.chunkText?.slice(0, 120) ?? "El proceso comienza con la validación del nicho.";
 
-**RECOMENDACIÓN:** Antes de avanzar, necesitás evaluar tu nicho con el Evaluador de NEXUS. Esto te dará un score objetivo que me permite darte consejos más precisos.
+  const mockResponse = `**ANÁLISIS:** Revisé tu consulta sobre "${userMessage.slice(0, 60)}..." y la cruzo con mi base de conocimiento de los 5 mentores.
 
-**ACCIÓN SIGUIENTE:** Andá a /dashboard/evaluator y completá el wizard de 5 pasos. Tarda menos de 10 minutos.
+**RECOMENDACIÓN:** ${
+    userMessage.toLowerCase().includes("nicho")
+      ? "Validá tu nicho con el Evaluador de NEXUS antes de cualquier otra acción. Un nicho mal elegido arruina todo lo que construís encima."
+      : userMessage.toLowerCase().includes("video") || userMessage.toLowerCase().includes("contenido")
+      ? "Aplicá la estructura de MrBeast: Gancho (0-30s) → Problema → Solución → CTA. El thumbnail vale más que el contenido en sí."
+      : userMessage.toLowerCase().includes("monetiz") || userMessage.toLowerCase().includes("dinero")
+      ? "Siguiendo a Hormozi: diseñá tu oferta backend ANTES de crear el canal. El contenido son anuncios gratuitos de lo que vendés."
+      : "Completá primero la evaluación de nicho — sin eso no puedo darte consejos precisos. Es el paso que define todo."
+  }
 
-**TIEMPO ESTIMADO:** 10 minutos para la evaluación completa.
+**ACCIÓN SIGUIENTE:** ${
+    userMessage.toLowerCase().includes("nicho")
+      ? "Usá el Evaluador de NEXUS (/dashboard/evaluator). Tardás menos de 10 minutos y obtenés un score de 0-96."
+      : "Evaluá tu nicho en /dashboard/evaluator si aún no lo hiciste. Después volvé con preguntas más específicas."
+  }
 
-**HERRAMIENTA:** NEXUS Evaluador de Nichos + YouTube API.
+**TIEMPO ESTIMADO:** 10-15 minutos.
 
-**FUENTE:** Adrián Sáenz — "El proceso comienza con la validación del nicho. Sin esto, todo lo demás es construir sobre arena."
+**HERRAMIENTA:** NEXUS Evaluador + YouTube API (modo mock hasta que configures YOUTUBE_API_KEY).
 
-¿Ya tenés un nicho en mente? ¿Querés que te ayude a definirlo antes de la evaluación?
+**FUENTE:** ${authorName} — "${sourceText}..."
 
-> ⚠️ *Modo demo: configurá ANTHROPIC_API_KEY o OPENAI_API_KEY en .env.local para respuestas reales.*`;
+¿Querés que profundice en algún aspecto específico?
+
+> ⚠️ *Modo demo activo — configurá ANTHROPIC_API_KEY en .env.local para respuestas IA reales.*`;
 
   const words = mockResponse.split(" ");
   for (const word of words) {

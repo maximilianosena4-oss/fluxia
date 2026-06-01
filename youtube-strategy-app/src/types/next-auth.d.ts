@@ -1,5 +1,3 @@
-// Extensión de tipos de NextAuth v5 para incluir user.id en la sesión
-
 import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
@@ -7,5 +5,11 @@ declare module "next-auth" {
     user: {
       id: string;
     } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    userId?: string;
   }
 }
