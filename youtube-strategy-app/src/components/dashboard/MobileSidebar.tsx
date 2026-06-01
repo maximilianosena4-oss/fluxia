@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/consultant", label: "Consultor IA",    icon: "🤖" },
   { href: "/dashboard/roadmap",    label: "Plan de Acción",  icon: "🗺️" },
   { href: "/dashboard/ideas",      label: "Content Factory", icon: "💡" },
+  { href: "/dashboard/settings",   label: "Configuración",   icon: "⚙️" },
 ];
 
 export function MobileSidebar() {

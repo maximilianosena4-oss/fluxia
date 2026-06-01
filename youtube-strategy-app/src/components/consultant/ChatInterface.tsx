@@ -17,7 +17,16 @@ const SUGGESTED_PROMPTS = [
 
 const CHANNEL_ID = "default"; // Hasta que el usuario tenga canal en DB
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  initialContext?: {
+    nicheScore: number | null;
+    roadmapProgress: number;
+    currentNiche: string | null;
+    lastCompletedActions: string[];
+  };
+}
+
+export function ChatInterface({ initialContext }: ChatInterfaceProps) {
   const { sessions, createSession, addMessage, updateStreamingMessage, finalizeStreamingMessage, activeSessionId, setActiveSession, isStreaming, setStreaming } = useConsultantStore();
   const { metrics } = useUserStore();
   const [input, setInput] = useState("");
@@ -68,10 +77,10 @@ export function ChatInterface() {
         body: JSON.stringify({
           message: text.trim(),
           context: {
-            nicheScore: metrics.nicheScore,
-            roadmapProgress: metrics.roadmapProgress,
-            currentNiche: null,
-            lastCompletedActions: [],
+            nicheScore: initialContext?.nicheScore ?? metrics.nicheScore,
+            roadmapProgress: initialContext?.roadmapProgress ?? metrics.roadmapProgress,
+            currentNiche: initialContext?.currentNiche ?? null,
+            lastCompletedActions: initialContext?.lastCompletedActions ?? [],
           },
         }),
       });
