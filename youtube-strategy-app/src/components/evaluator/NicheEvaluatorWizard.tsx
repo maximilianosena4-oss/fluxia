@@ -74,6 +74,23 @@ export function NicheEvaluatorWizard() {
     }
   }
 
+  async function saveToDb(score: NicheScoreBreakdown, verdict: NicheVerdict) {
+    try {
+      await fetch("/api/evaluations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nicheName: store.nicheName,
+          criteriaJson: { ...store.scoringInputs, riskFlags: store.riskFlags, channelType: store.channelType },
+          totalScore: score.total,
+          recommendation: `${verdict}: ${store.nicheName} — Score ${score.total}/96`,
+        }),
+      });
+    } catch {
+      // No bloquear el flujo si falla el guardado
+    }
+  }
+
   function computeScore(): { score: NicheScoreBreakdown; verdict: NicheVerdict } {
     const inputs: ScoringInputs = {
       hasActiveSearches:      store.scoringInputs.hasActiveSearches      ?? true,
@@ -462,6 +479,7 @@ export function NicheEvaluatorWizard() {
               onClick={() => {
                 const { score, verdict } = computeScore();
                 store.setResult(score, verdict);
+                void saveToDb(score, verdict);
                 store.nextStep();
               }}
             >
