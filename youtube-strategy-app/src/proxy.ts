@@ -6,8 +6,13 @@ import type { NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/dashboard"];
 const AUTH_PATHS = ["/login", "/register"];
-// NextAuth v5 session cookie names (JWT strategy)
-const SESSION_COOKIES = ["authjs.session-token", "__Secure-authjs.session-token"];
+// NextAuth v5 session cookie names (database sessions via PrismaAdapter)
+const SESSION_COOKIES = [
+  "authjs.session-token",
+  "__Secure-authjs.session-token",
+  "next-auth.session-token",          // fallback
+  "__Secure-next-auth.session-token", // fallback producción
+];
 
 function hasSession(request: NextRequest): boolean {
   return SESSION_COOKIES.some((name) => !!request.cookies.get(name)?.value);
