@@ -1,4 +1,4 @@
-// POST /api/evaluate — Análisis de nicho con YouTube API + IA
+﻿// POST /api/evaluate — Análisis de nicho con YouTube API + IA
 // Devuelve los inputs de scoring calculados automáticamente
 
 import { auth } from "@/auth";
@@ -7,7 +7,7 @@ import { z } from "zod";
 import { searchVideos, searchChannels } from "@/lib/youtube/client";
 import { webSearch } from "@/lib/search/tavily";
 import { sanitizeForLLM } from "@/lib/security/sanitize";
-import { checkRateLimit } from "@/lib/security/rateLimit";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rateLimit";
 import type { ScoringInputs } from "@/lib/scoring/nicheScore";
 
 const RequestSchema = z.object({
@@ -25,8 +25,7 @@ export async function POST(request: Request) {
   const rl = await checkRateLimit(session.user.id, "youtube");
   if (!rl.success) {
     return NextResponse.json(
-      { error: "Demasiadas consultas. Esperá un minuto." },
-      { status: 429 }
+      { error: "Demasiadas consultas. Esperá un minuto." }, { status: 429, headers: rateLimitHeaders(rl, "youtube") }
     );
   }
 
@@ -43,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   const { niche } = parsed.data;
-  const { safe, sanitized } = sanitizeForLLM(niche);
+  const { safe } = sanitizeForLLM(niche);
   if (!safe) {
     return NextResponse.json({ error: "Input inválido" }, { status: 400 });
   }

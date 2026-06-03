@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -6,22 +6,26 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",            label: "Inicio",          icon: "🏠" },
-  { href: "/dashboard/evaluator",  label: "Evaluar Nicho",   icon: "⚡" },
-  { href: "/dashboard/consultant", label: "Consultor IA",    icon: "🤖" },
-  { href: "/dashboard/roadmap",    label: "Plan de Acción",  icon: "🗺️" },
-  { href: "/dashboard/ideas",      label: "Content Factory", icon: "💡" },
-  { href: "/dashboard/analytics",  label: "Analytics",       icon: "📊" },
-  { href: "/dashboard/calendar",   label: "Calendario",      icon: "📅" },
-  { href: "/dashboard/scripts",    label: "Guiones",         icon: "✍️" },
-  { href: "/dashboard/settings",   label: "Configuración",   icon: "⚙️" },
+  { href: "/dashboard",              label: "Inicio",            icon: "🏠" },
+  { href: "/dashboard/evaluator",    label: "Evaluar Nicho",     icon: "⚡" },
+  { href: "/dashboard/consultant",   label: "Consultor IA",      icon: "🤖" },
+  { href: "/dashboard/roadmap",      label: "Plan de Acción",    icon: "🗺️" },
+  { href: "/dashboard/ideas",        label: "Content Factory",   icon: "💡" },
+  { href: "/dashboard/analytics",    label: "Analytics",         icon: "📊" },
+  { href: "/dashboard/calendar",     label: "Calendario",        icon: "📅" },
+  { href: "/dashboard/scripts",      label: "Guiones",           icon: "✍️" },
+  { href: "/dashboard/thumbnails",   label: "Thumbnails",        icon: "🖼️" },
+  { href: "/dashboard/tools",        label: "Herramientas",      icon: "🛠️" },
+  { href: "/dashboard/comparator",   label: "Comparador",        icon: "⚖️" },
+  { href: "/dashboard/settings",     label: "Configuración",     icon: "⚙️" },
 ];
 
 export function MobileSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Cerrar al cambiar de ruta
+  // Cerrar al cambiar de ruta — patrón válido para drawers de navegación
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setOpen(false); }, [pathname]);
 
   // Cerrar con Escape

@@ -56,6 +56,19 @@ export async function runOutlierTest(
   return result;
 }
 
+export function detectOutliers(
+  videos: YouTubeVideo[],
+  multiplier = 10
+): { outliers: YouTubeVideo[]; avgViews: number; maxViews: number } {
+  if (videos.length === 0) return { outliers: [], avgViews: 0, maxViews: 0 };
+  const total = videos.reduce((s, v) => s + v.viewCount, 0);
+  const avgViews = Math.round(total / videos.length);
+  const maxViews = Math.max(...videos.map((v) => v.viewCount), 0);
+  const threshold = avgViews * multiplier;
+  const outliers = videos.filter((v) => v.viewCount >= threshold).sort((a, b) => b.viewCount - a.viewCount);
+  return { outliers, avgViews, maxViews };
+}
+
 export function outlierTestSummary(results: OutlierTestResult[]): {
   nicheHasOutliers: boolean;
   channelsWithOutliers: number;

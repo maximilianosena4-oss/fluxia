@@ -4,6 +4,8 @@ import { MetricsCard } from "@/components/dashboard/MetricsCard";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { DailyInsight } from "@/components/dashboard/DailyInsight";
 import { ActionItem } from "@/components/dashboard/ActionItem";
+import { RoadmapDonut } from "@/components/dashboard/DashboardCharts";
+import { QuickAccessGrid } from "@/components/dashboard/QuickAccessGrid";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -237,6 +239,19 @@ export default async function DashboardPage() {
             </div>
           )}
 
+          {/* Donut de progreso */}
+          {allItems.length > 0 && (
+            <div
+              className="rounded-xl p-4 border"
+              style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-default)" }}
+            >
+              <p className="text-xs font-medium mb-3" style={{ color: "var(--text-muted)" }}>
+                TAREAS DEL ROADMAP
+              </p>
+              <RoadmapDonut completed={completedItems.length} total={allItems.length} />
+            </div>
+          )}
+
           {/* Link al consultor */}
           <div
             className="rounded-xl p-4 border"
@@ -250,6 +265,14 @@ export default async function DashboardPage() {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Acceso rápido a herramientas */}
+      <div>
+        <h2 className="font-semibold text-sm mb-3" style={{ color: "var(--text-primary)" }}>
+          Acceso rápido
+        </h2>
+        <QuickAccessGrid />
       </div>
     </div>
   );

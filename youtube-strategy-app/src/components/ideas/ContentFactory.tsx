@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -219,11 +220,22 @@ interface IdeaCardProps {
 
 function IdeaCard({ idea, expanded, onToggleExpand, onSave, onMarkPublished }: IdeaCardProps) {
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
   function copyThumbnailPrompt() {
     void navigator.clipboard.writeText(idea.thumbnailPrompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function goToScript() {
+    const params = new URLSearchParams({ title: idea.title, hook: idea.hook ?? "" });
+    router.push(`/dashboard/scripts?${params.toString()}`);
+  }
+
+  function goToThumbnail() {
+    const params = new URLSearchParams({ title: idea.title, prompt: idea.thumbnailPrompt ?? "" });
+    router.push(`/dashboard/thumbnails?${params.toString()}`);
   }
 
   const scoreColor = idea.viralityScore >= 80 ? "var(--accent-success)"
@@ -286,6 +298,16 @@ function IdeaCard({ idea, expanded, onToggleExpand, onSave, onMarkPublished }: I
           </div>
 
           <div className="flex flex-wrap gap-2 pt-1">
+            {idea.title && (
+              <Button variant="outline" size="sm" onClick={goToScript}>
+                ✍️ Generar guión completo
+              </Button>
+            )}
+            {idea.thumbnailPrompt && (
+              <Button variant="secondary" size="sm" onClick={goToThumbnail}>
+                🖼️ Crear thumbnail
+              </Button>
+            )}
             {!isSaved && (
               <Button variant="secondary" size="sm" onClick={onSave}>
                 ⭐ Guardar idea

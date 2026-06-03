@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
 import { OnboardingModal } from "@/components/shared/OnboardingModal";
+import { SyncUserMetrics } from "@/components/providers/SyncUserMetrics";
 import type { AppUser } from "@/types";
 import type { Metadata } from "next";
 
@@ -50,12 +51,21 @@ export default async function DashboardLayout({
     });
   }
 
-  // Progreso del roadmap desde DB
-  const [total, done] = await Promise.all([
+  // Progreso del roadmap + métricas completas del dashboard
+  const [total, done, latestEval, videosPublished] = await Promise.all([
     prisma.actionItem.count({ where: { channel: { userId: dbUser.id } } }),
     prisma.actionItem.count({ where: { channel: { userId: dbUser.id }, completedAt: { not: null } } }),
+    prisma.nicheEvaluation.findFirst({
+      where: { channel: { userId: dbUser.id } },
+      orderBy: { createdAt: "desc" },
+      select: { totalScore: true },
+    }),
+    prisma.contentIdea.count({ where: { channel: { userId: dbUser.id }, status: "published" } }),
   ]);
   const roadmapProgress = total > 0 ? Math.round((done / total) * 100) : 0;
+  const nicheScore = latestEval?.totalScore ?? null;
+  const daysToMonetization = roadmapProgress > 0 ? Math.max(1, Math.round(90 * (1 - roadmapProgress / 100))) : null;
+  const projectedRevenue90d = nicheScore && nicheScore >= 70 ? Math.round(nicheScore * 4.5) : null;
 
   const user: AppUser = {
     id: dbUser.id,
@@ -69,13 +79,33 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
+      {/* Skip-to-main para WCAG A11y */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:text-white focus:text-sm focus:font-medium"
+        style={{ backgroundColor: "var(--accent-primary)" }}
+      >
+        Saltar al contenido principal
+      </a>
+
+      {/* Sincroniza las 5 métricas del servidor con Zustand (ChatInterface + resto de la app) */}
+      <SyncUserMetrics
+        metrics={{
+          nicheScore,
+          roadmapProgress,
+          videosPublished,
+          daysToMonetization,
+          projectedRevenue90d,
+        }}
+      />
+
       <div className="hidden lg:block">
         <Sidebar />
       </div>
       <Navbar user={user} roadmapProgress={roadmapProgress} />
-      <div className="pt-16 lg:pl-60 min-h-screen">
+      <main id="main-content" className="pt-16 lg:pl-60 min-h-screen">
         <div className="p-4 lg:p-8">{children}</div>
-      </div>
+      </main>
       <OnboardingModal />
     </div>
   );

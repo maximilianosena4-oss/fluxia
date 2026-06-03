@@ -43,6 +43,14 @@ export default async function SettingsPage() {
           score: channel?.score ?? null,
         }}
         stats={{ evaluationsCount, ideasCount }}
+        integrations={{
+          supabase:   Boolean(process.env.DATABASE_URL),
+          googleAuth: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+          anthropic:  Boolean(process.env.ANTHROPIC_API_KEY),
+          youtube:    Boolean(process.env.YOUTUBE_API_KEY),
+          openai:     Boolean(process.env.OPENAI_API_KEY),
+          upstash:    Boolean(process.env.UPSTASH_REDIS_REST_URL),
+        }}
       />
     </div>
   );

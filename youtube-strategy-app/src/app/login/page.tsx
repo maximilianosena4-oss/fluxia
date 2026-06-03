@@ -1,7 +1,7 @@
 // /login — Login con Google OAuth y animaciones Momentum UI
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth, signIn } from "@/auth";
+import { auth } from "@/auth";
 import { LoginCard } from "./LoginCard";
 
 export const metadata: Metadata = { title: "Iniciar sesión" };

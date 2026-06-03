@@ -25,9 +25,17 @@ interface Props {
     evaluationsCount: number;
     ideasCount: number;
   };
+  integrations: {
+    supabase: boolean;
+    googleAuth: boolean;
+    anthropic: boolean;
+    youtube: boolean;
+    openai: boolean;
+    upstash: boolean;
+  };
 }
 
-export function SettingsForm({ user, channel, stats }: Props) {
+export function SettingsForm({ user, channel, stats, integrations }: Props) {
   const [ytChannelId, setYtChannelId] = useState(channel.youtubeChannelId);
   const [saving, setSaving] = useState(false);
 
@@ -173,11 +181,12 @@ export function SettingsForm({ user, channel, stats }: Props) {
         <CardContent>
           <div className="space-y-3">
             {[
-              { name: "Supabase (DB)", status: true, desc: "Base de datos activa" },
-              { name: "Google OAuth", status: true, desc: "Login funcionando" },
-              { name: "Anthropic Claude", status: false, desc: "Agrega ANTHROPIC_API_KEY en .env.local" },
-              { name: "YouTube Data API", status: false, desc: "Agrega YOUTUBE_API_KEY en .env.local" },
-              { name: "OpenAI (embeddings)", status: false, desc: "Agrega OPENAI_API_KEY para RAG real" },
+              { name: "Supabase (DB)",       status: integrations.supabase,   desc: integrations.supabase   ? "Base de datos activa"              : "Agrega DATABASE_URL en .env.local" },
+              { name: "Google OAuth",        status: integrations.googleAuth, desc: integrations.googleAuth ? "Login con Google activo"           : "Agrega GOOGLE_CLIENT_ID y SECRET" },
+              { name: "Anthropic Claude",    status: integrations.anthropic,  desc: integrations.anthropic  ? "Consultor IA activo"               : "Agrega ANTHROPIC_API_KEY en .env.local" },
+              { name: "YouTube Data API",    status: integrations.youtube,    desc: integrations.youtube    ? "API de YouTube conectada"          : "Agrega YOUTUBE_API_KEY en .env.local" },
+              { name: "OpenAI (embeddings)", status: integrations.openai,     desc: integrations.openai     ? "RAG con embeddings reales activo"  : "Agrega OPENAI_API_KEY para RAG real" },
+              { name: "Upstash Redis",       status: integrations.upstash,    desc: integrations.upstash    ? "Rate limiting activo"              : "Opcional — agrega UPSTASH_REDIS_REST_URL" },
             ].map((item) => (
               <div key={item.name} className="flex items-center gap-3">
                 <div

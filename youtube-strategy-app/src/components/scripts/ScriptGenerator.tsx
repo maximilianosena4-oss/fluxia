@@ -23,13 +23,20 @@ const DURATIONS: Array<{ value: Duration; label: string; desc: string }> = [
   { value: "long", label: "Largo", desc: "18-25 min" },
 ];
 
-export function ScriptGenerator() {
+interface ScriptGeneratorProps {
+  initialTitle?: string;
+  initialHook?: string;
+}
+
+export function ScriptGenerator({ initialTitle = "", initialHook = "" }: ScriptGeneratorProps) {
   const { nicheName } = useEvaluatorStore();
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [niche, setNiche] = useState(nicheName || "");
+  const [targetAudience, setTargetAudience] = useState("");
   const [channelType, setChannelType] = useState<ChannelType>("no-face-ai");
   const [duration, setDuration] = useState<Duration>("medium");
+  const fromFactory = Boolean(initialTitle || initialHook);
   const [isLoading, setIsLoading] = useState(false);
   const [script, setScript] = useState<VideoScript | null>(null);
   const [expandedSection, setExpandedSection] = useState<number | null>(0);
@@ -48,10 +55,12 @@ export function ScriptGenerator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title.trim(),
-          niche: niche.trim(),
+          title:          title.trim(),
+          niche:          niche.trim(),
+          hook:           initialHook.trim() || undefined,
+          targetAudience: targetAudience.trim() || undefined,
           channelType,
-          videoDuration: duration,
+          videoDuration:  duration,
         }),
       });
 
@@ -106,6 +115,20 @@ export function ScriptGenerator() {
           <CardTitle>Configurar guión</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
+          {/* Badge: pre-llenado desde Content Factory */}
+          {fromFactory && (
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+              style={{ backgroundColor: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", color: "var(--accent-primary)" }}
+            >
+              <span>💡</span>
+              <span>
+                Pre-llenado desde <strong>Content Factory</strong>
+                {initialHook && " · hook sugerido incluido"}
+              </span>
+            </div>
+          )}
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
@@ -135,6 +158,22 @@ export function ScriptGenerator() {
                 onBlur={(e) => (e.target.style.borderColor = "var(--border-default)")}
               />
             </div>
+          </div>
+
+          {/* Audiencia objetivo */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+              Audiencia objetivo <span style={{ color: "var(--text-muted)" }}>(opcional)</span>
+            </label>
+            <input
+              value={targetAudience}
+              onChange={(e) => setTargetAudience(e.target.value)}
+              placeholder="ej: Millennials de 25-35 años que quieren invertir por primera vez"
+              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none border transition-colors"
+              style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border-default)")}
+            />
           </div>
 
           {/* Tipo de canal */}

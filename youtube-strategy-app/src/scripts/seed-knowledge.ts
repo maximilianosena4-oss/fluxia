@@ -131,11 +131,10 @@ async function seedKnowledge() {
       continue;
     }
 
-    let embedding: number[] | null = null;
     if (process.env.OPENAI_API_KEY) {
       try {
-        embedding = await generateEmbedding(chunk.chunkText);
-      } catch (e) {
+        await generateEmbedding(chunk.chunkText);
+      } catch {
         console.warn(`   ⚠ No se pudo generar embedding para chunk de ${chunk.author}`);
       }
     }

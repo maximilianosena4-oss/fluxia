@@ -18,6 +18,28 @@ export interface RiskFlags {
   copyrightRisk: boolean;
 }
 
+export interface SampleVideo {
+  id: string;
+  title: string;
+  viewCount: number;
+  thumbnailUrl: string;
+}
+
+export interface TopChannel {
+  id: string;
+  title: string;
+  subscriberCount: number;
+  thumbnailUrl: string;
+}
+
+export interface AnalysisStats {
+  totalVideosFound: number;
+  avgViews: number;
+  maxViews: number;
+  hasOutlier: boolean;
+  activeChannels: number;
+}
+
 interface EvaluatorState {
   currentStep: EvaluatorStep;
   isLoading: boolean;
@@ -35,6 +57,9 @@ interface EvaluatorState {
 
   // Paso 3-4 (resultados de búsqueda IA)
   scoringInputs: Partial<ScoringInputs>;
+  sampleVideos: SampleVideo[];
+  topChannels: TopChannel[];
+  analysisStats: AnalysisStats | null;
 
   // Paso 5
   scoreBreakdown: NicheScoreBreakdown | null;
@@ -47,6 +72,7 @@ interface EvaluatorState {
   updateStep1: (data: Partial<Pick<EvaluatorState, "nicheName" | "subNiche" | "language" | "channelType" | "validationDate" | "whyThisNiche">>) => void;
   updateRiskFlags: (flags: Partial<RiskFlags>) => void;
   updateScoringInputs: (inputs: Partial<ScoringInputs>) => void;
+  setApiResults: (data: { sampleVideos: SampleVideo[]; topChannels: TopChannel[]; stats: AnalysisStats }) => void;
   setResult: (score: NicheScoreBreakdown, verdict: NicheVerdict) => void;
   setLoading: (loading: boolean) => void;
   reset: () => void;
@@ -72,6 +98,9 @@ export const useEvaluatorStore = create<EvaluatorState>()((set) => ({
   whyThisNiche: "",
   riskFlags: DEFAULT_RISK_FLAGS,
   scoringInputs: {},
+  sampleVideos: [],
+  topChannels: [],
+  analysisStats: null,
   scoreBreakdown: null,
   verdict: null,
 
@@ -99,6 +128,13 @@ export const useEvaluatorStore = create<EvaluatorState>()((set) => ({
       scoringInputs: { ...state.scoringInputs, ...inputs },
     })),
 
+  setApiResults: (data) =>
+    set({
+      sampleVideos: data.sampleVideos,
+      topChannels: data.topChannels,
+      analysisStats: data.stats,
+    }),
+
   setResult: (score, verdict) =>
     set({ scoreBreakdown: score, verdict }),
 
@@ -116,6 +152,9 @@ export const useEvaluatorStore = create<EvaluatorState>()((set) => ({
       whyThisNiche: "",
       riskFlags: DEFAULT_RISK_FLAGS,
       scoringInputs: {},
+      sampleVideos: [],
+      topChannels: [],
+      analysisStats: null,
       scoreBreakdown: null,
       verdict: null,
     }),

@@ -62,6 +62,47 @@ export async function GET() {
   return NextResponse.json({ items });
 }
 
+const CreateSchema = z.object({
+  description: z.string().min(3).max(200),
+  phase: z.number().int().min(0).max(3).default(2),
+});
+
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  let body: unknown;
+  try { body = await request.json(); } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+
+  const parsed = CreateSchema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+
+  const channel = await prisma.channel.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!channel) return NextResponse.json({ error: "Canal no encontrado" }, { status: 404 });
+
+  // Paso = número más alto existente en esa fase + 1
+  const maxStep = await prisma.actionItem.aggregate({
+    where: { channelId: channel.id, phase: parsed.data.phase },
+    _max: { step: true },
+  });
+
+  const item = await prisma.actionItem.create({
+    data: {
+      channelId:   channel.id,
+      description: parsed.data.description,
+      phase:       parsed.data.phase,
+      step:        (maxStep._max.step ?? 0) + 1,
+    },
+  });
+
+  return NextResponse.json({ item }, { status: 201 });
+}
+
 const ToggleSchema = z.object({
   id: z.string(),
   completed: z.boolean(),

@@ -4,8 +4,9 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie, Legend,
+  BarChart, Bar, Cell, PieChart, Pie,
 } from "recharts";
+import { PhaseProgressChart } from "@/components/dashboard/DashboardCharts";
 
 interface Props {
   evaluations: Array<{
@@ -108,10 +109,18 @@ export function AnalyticsDashboard({ evaluations, actionItems, contentIdeas, nic
         ))}
       </div>
 
+      {/* Progreso por fase — barras de progreso */}
+      <Card>
+        <CardHeader><CardTitle>Progreso por fase del roadmap</CardTitle></CardHeader>
+        <CardContent>
+          <PhaseProgressChart phases={phaseData.map((p, i) => ({ phase: i, label: p.name, total: p.total, completed: p.completed, color: p.color }))} />
+        </CardContent>
+      </Card>
+
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Progreso por fase */}
+        {/* Progreso por fase — gráfico de barras */}
         <Card>
-          <CardHeader><CardTitle>Progreso por fase</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Completado por fase (%)</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={phaseData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>

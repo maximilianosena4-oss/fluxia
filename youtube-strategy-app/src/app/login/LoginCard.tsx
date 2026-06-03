@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { FluxiaHero } from "@/components/shared/FluxiaHero";
 
 const MENTORS = ["Eloisa Wolf", "Adrián Sáenz", "Eric Alanis", "Alex Hormozi", "MrBeast"];
 
@@ -17,50 +18,26 @@ export function LoginCard({ error }: { error?: string }) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "var(--bg-primary)" }}
+      className="min-h-screen flex flex-col items-center justify-end pb-16 px-4"
+      style={{ backgroundColor: "#000000" }}
     >
-      {/* Background gradient blob */}
-      <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-3xl pointer-events-none"
-        style={{ background: "radial-gradient(circle, var(--accent-primary), var(--accent-secondary))" }}
-      />
+      {/* ── FluxIA Hero (canvas Matrix + título animado) ── */}
+      <FluxiaHero />
 
       <motion.div
-        className="w-full max-w-sm space-y-8 relative z-10"
+        className="w-full max-w-sm space-y-8 relative z-20"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.6 }}
       >
-        {/* Logo */}
-        <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-2xl font-black text-white"
-            style={{ background: "linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))" }}
-          >
-            N
-          </motion.div>
-          <div>
-            <h1 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
-              NEXUS
-            </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-              Tu canal de YouTube que genera ingresos.<br />
-              <span style={{ color: "var(--accent-primary)" }}>Paso a paso, con IA.</span>
-            </p>
-          </div>
-        </div>
 
-        {/* Card */}
+        {/* Card — glass morphism sobre fondo Matrix */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="rounded-2xl p-8 space-y-6 border"
-          style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-default)" }}
+          className="rounded-2xl p-8 space-y-6 glass-strong"
+          style={{ boxShadow: "0 8px 48px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.08), inset 0 1px 0 rgba(255,255,255,0.06)" }}
         >
           <div className="text-center space-y-1">
             <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>

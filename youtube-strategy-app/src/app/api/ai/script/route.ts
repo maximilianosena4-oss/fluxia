@@ -1,11 +1,11 @@
-// POST /api/ai/script — Generador de guiones de video completos
+﻿// POST /api/ai/script — Generador de guiones de video completos
 // Estructura basada en los principios de Adrián Sáenz + MrBeast
 
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sanitizeForLLM } from "@/lib/security/sanitize";
-import { checkRateLimit } from "@/lib/security/rateLimit";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rateLimit";
 
 const RequestSchema = z.object({
   title: z.string().min(3).max(200),
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const rl = await checkRateLimit(session.user.id, "ai");
   if (!rl.success) {
-    return NextResponse.json({ error: "Demasiadas consultas. Esperá un minuto." }, { status: 429 });
+    return NextResponse.json({ error: "Demasiadas consultas. Esperá un minuto." }, { status: 429, headers: rateLimitHeaders(rl, "ai") });
   }
 
   let body: unknown;

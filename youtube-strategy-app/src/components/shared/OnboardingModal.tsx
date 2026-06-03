@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,30 +16,36 @@ const STEPS: Step[] = [
   {
     emoji: "👋",
     title: "Bienvenido a NEXUS",
-    description: "Tu consultor IA de YouTube. Vamos a llevarte de cero a monetización en 90 días. Primero lo primero — evaluemos tu nicho.",
+    description: "Tu consultor IA de YouTube. 12 secciones para llevarte de cero a monetización en 90 días. Empezá por el Evaluador de Nicho — define el 80% de tu éxito.",
   },
   {
     emoji: "⚡",
     title: "Paso 1: Evaluá tu nicho",
-    description: "El Evaluador de NEXUS analiza demanda, competencia y potencial de ingresos. Tarda 10 minutos y te da un score de 0 a 96. Es el paso que define todo lo demás.",
+    description: "Wizard de 5 pasos con scoring de 96 puntos. NEXUS busca en YouTube API en tiempo real y valida con los criterios de los 5 mentores. Resultado: GO / REFINE / DISCARD.",
     action: { label: "Evaluar mi nicho →", href: "/dashboard/evaluator" },
   },
   {
+    emoji: "⚖️",
+    title: "Compará opciones",
+    description: "Si dudás entre varios nichos, el Comparador los evalúa lado a lado con el mismo modelo de 96 puntos. Ve qué nicho gana en cada criterio y elegí con datos.",
+    action: { label: "Comparar nichos →", href: "/dashboard/comparator" },
+  },
+  {
     emoji: "🤖",
-    title: "Paso 2: Consultá con IA",
-    description: "El Consultor NEXUS responde cualquier duda basándose en las estrategias de los 5 mentores: Sáenz, Hormozi, MrBeast, Eloisa Wolf y Eric Alanis.",
+    title: "Consultá con IA",
+    description: "El Consultor recuerda el historial de tu sesión y usa RAG sobre los 5 mentores. Responde en formato estructurado: Análisis · Recomendación · Acción · Fuente.",
     action: { label: "Abrir el consultor →", href: "/dashboard/consultant" },
   },
   {
-    emoji: "🗺️",
-    title: "Paso 3: Seguí el roadmap",
-    description: "Tu plan de acción personalizado. Desde la validación hasta el YPP, con cada tarea detallada. Se genera automáticamente cuando evaluás tu nicho.",
-    action: { label: "Ver el roadmap →", href: "/dashboard/roadmap" },
+    emoji: "🛠️",
+    title: "Las herramientas",
+    description: "En un solo lugar: Keyword Research (volumen + competencia + RPM), Generador de Hooks (5 tipos, principios de MrBeast) y Checklist pre-publicación (21 ítems).",
+    action: { label: "Ver herramientas →", href: "/dashboard/tools" },
   },
   {
     emoji: "🚀",
-    title: "¡Listo para empezar!",
-    description: "Recordá: el 80% del éxito está en elegir el nicho correcto. No saltees el Evaluador. Cada función de NEXUS se vuelve más potente a medida que avanzás.",
+    title: "¡Todo listo!",
+    description: "Tenés 12 secciones, 5 mentores, análisis IA y roadmap personalizado. El atajo más rápido: evaluá el nicho → seguí el roadmap → consultá al IA ante cualquier duda.",
   },
 ];
 
@@ -51,6 +57,7 @@ export function OnboardingModal() {
 
   useEffect(() => {
     const done = localStorage.getItem(ONBOARDING_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!done) setVisible(true);
   }, []);
 

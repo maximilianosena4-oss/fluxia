@@ -71,6 +71,23 @@ export async function POST(request: Request) {
   return NextResponse.json({ idea }, { status: 201 });
 }
 
+export async function DELETE(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "Se requiere id" }, { status: 400 });
+
+  const idea = await prisma.contentIdea.findFirst({
+    where: { id, channel: { userId: session.user.id } },
+  });
+  if (!idea) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+  await prisma.contentIdea.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}
+
 export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });

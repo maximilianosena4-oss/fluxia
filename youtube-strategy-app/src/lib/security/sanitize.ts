@@ -15,16 +15,8 @@ const JAILBREAK_PATTERNS = [
 ];
 
 export function sanitizeHtml(dirty: string): string {
-  if (typeof window === "undefined") {
-    // Server-side: basic strip
-    return dirty.replace(/<[^>]*>/g, "").trim();
-  }
-  // Client-side: use DOMPurify
-  const DOMPurify = require("isomorphic-dompurify");
-  return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: ["b", "i", "em", "strong", "p", "br", "ul", "ol", "li"],
-    ALLOWED_ATTR: [],
-  });
+  // Server-side y client-side: strip HTML básico (DOMPurify solo en cliente)
+  return dirty.replace(/<[^>]*>/g, "").trim();
 }
 
 export function sanitizeText(input: string): string {

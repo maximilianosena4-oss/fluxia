@@ -41,10 +41,11 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
 
   const session = sessions.find((s) => s.id === sessionId);
   const messages = session?.messages ?? [];
+  const messageCount = messages.length;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messageCount]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isStreaming) return;
@@ -71,11 +72,18 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
     setStreaming(true);
 
     try {
+      // Enviar últimos 10 mensajes (5 exchanges) como historial al LLM
+      const history = messages
+        .filter((m) => !m.isStreaming && m.content.trim())
+        .slice(-10)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text.trim(),
+          history,
           context: {
             nicheScore: initialContext?.nicheScore ?? metrics.nicheScore,
             roadmapProgress: initialContext?.roadmapProgress ?? metrics.roadmapProgress,
@@ -122,6 +130,7 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
     } finally {
       finalizeStreamingMessage(sessionId, assistantMsgId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, isStreaming, metrics, addMessage, updateStreamingMessage, finalizeStreamingMessage, setStreaming]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -134,29 +143,74 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       <div className="grid lg:grid-cols-4 gap-4 flex-1 min-h-0">
-        {/* Panel izquierdo — historial de sesiones (futuro) */}
+        {/* Panel izquierdo — historial de sesiones */}
         <div
-          className="hidden lg:flex flex-col rounded-xl border p-3 gap-2"
+          className="hidden lg:flex flex-col rounded-xl border overflow-hidden"
           style={{
             backgroundColor: "var(--bg-secondary)",
             borderColor: "var(--border-default)",
           }}
         >
-          <p className="text-xs font-medium uppercase tracking-wide px-2" style={{ color: "var(--text-muted)" }}>
-            Sesión actual
-          </p>
-          <div
-            className="px-3 py-2 rounded-lg text-sm font-medium"
-            style={{
-              backgroundColor: "var(--accent-primary)",
-              color: "white",
-            }}
-          >
-            Consulta general
+          {/* Encabezado */}
+          <div className="px-3 py-3 border-b" style={{ borderColor: "var(--border-default)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Historial
+            </p>
           </div>
-          <div className="mt-auto text-xs px-2 space-y-1" style={{ color: "var(--text-muted)" }}>
-            <p>Progreso: {metrics.roadmapProgress}%</p>
-            {metrics.nicheScore && <p>Nicho: {metrics.nicheScore}/96</p>}
+
+          {/* Lista de sesiones */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {sessions.length === 0 ? (
+              <p className="text-xs px-2 py-4 text-center" style={{ color: "var(--text-muted)" }}>
+                Sin sesiones anteriores
+              </p>
+            ) : (
+              sessions.map((s) => {
+                const isActive = s.id === sessionId;
+                const firstMsg = s.messages.find((m) => m.role === "user");
+                const label = firstMsg?.content
+                  ? firstMsg.content.slice(0, 28) + (firstMsg.content.length > 28 ? "…" : "")
+                  : "Consulta general";
+                return (
+                  <button
+                    key={s.id}
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs transition-colors"
+                    style={{
+                      backgroundColor: isActive ? "var(--accent-primary)" : "transparent",
+                      color: isActive ? "white" : "var(--text-secondary)",
+                    }}
+                    onClick={() => setActiveSession(s.id)}
+                  >
+                    <p className="font-medium truncate">{label}</p>
+                    <p className="mt-0.5 opacity-70">
+                      {s.messages.length} mensaje{s.messages.length !== 1 ? "s" : ""}
+                    </p>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Nueva sesión */}
+          <div className="p-2 border-t" style={{ borderColor: "var(--border-default)" }}>
+            <button
+              onClick={() => {
+                const id = createSession(CHANNEL_ID);
+                setActiveSession(id);
+              }}
+              className="w-full text-xs px-3 py-2 rounded-lg border transition-colors text-left"
+              style={{ borderColor: "var(--border-default)", color: "var(--text-muted)" }}
+            >
+              + Nueva conversación
+            </button>
+          </div>
+
+          {/* Métricas */}
+          <div className="px-3 py-2 border-t text-xs space-y-0.5" style={{ borderColor: "var(--border-default)", color: "var(--text-muted)" }}>
+            <p>Progreso: <span style={{ color: "var(--accent-primary)" }}>{metrics.roadmapProgress}%</span></p>
+            {metrics.nicheScore && (
+              <p>Score: <span style={{ color: "var(--accent-success)" }}>{metrics.nicheScore}/96</span></p>
+            )}
           </div>
         </div>
 
@@ -249,6 +303,8 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
                 disabled={isStreaming}
                 rows={2}
                 placeholder="Escribí tu consulta... (Enter para enviar)"
+                aria-label="Mensaje para el consultor NEXUS"
+                aria-disabled={isStreaming}
                 className="flex-1 resize-none rounded-xl px-4 py-3 text-sm outline-none border transition-colors"
                 style={{
                   backgroundColor: "var(--bg-card)",

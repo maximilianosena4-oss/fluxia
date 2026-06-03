@@ -3,7 +3,7 @@
 // Sin pgvector/embeddings: búsqueda por similitud de texto (full-text search)
 
 import { prisma } from "@/lib/db/prisma";
-import { generateEmbedding, cosineSimilarity } from "@/lib/ai/embeddings";
+import { generateEmbedding } from "@/lib/ai/embeddings";
 import type { KnowledgeChunk, MentorSource } from "@/types/ai";
 
 const TOP_K = 5;
@@ -40,7 +40,8 @@ async function retrieveWithEmbeddings(
 
   if (allChunks.length === 0) return getHardcodedChunks(query);
 
-  const queryEmbedding = await generateEmbedding(query);
+  // Se generaría embedding para búsqueda coseno cuando esté disponible pgvector
+  await generateEmbedding(query).catch(() => null);
 
   // Chunks que tienen embedding guardado — calcular similitud
   const withScores = allChunks
@@ -144,8 +145,7 @@ function mapChunks(chunks: Array<{
 
 export function buildRAGPrompt(
   systemPrompt: string,
-  chunks: KnowledgeChunk[],
-  userQuery: string
+  chunks: KnowledgeChunk[]
 ): string {
   if (chunks.length === 0) return systemPrompt;
 

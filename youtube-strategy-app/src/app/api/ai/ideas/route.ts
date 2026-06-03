@@ -1,11 +1,11 @@
-// POST /api/ai/ideas — Generador de ideas con Outlier Test (YouTube API + IA)
+﻿// POST /api/ai/ideas — Generador de ideas con Outlier Test (YouTube API + IA)
 
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { searchVideos } from "@/lib/youtube/client";
 import { sanitizeForLLM } from "@/lib/security/sanitize";
-import { checkRateLimit } from "@/lib/security/rateLimit";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rateLimit";
 
 const RequestSchema = z.object({
   niche: z.string().min(2).max(100),
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const rl = await checkRateLimit(session.user.id, "ai");
   if (!rl.success) {
-    return NextResponse.json({ error: "Demasiadas consultas" }, { status: 429 });
+    return NextResponse.json({ error: "Demasiadas consultas" }, { status: 429, headers: rateLimitHeaders(rl, "ai") });
   }
 
   let body: unknown;

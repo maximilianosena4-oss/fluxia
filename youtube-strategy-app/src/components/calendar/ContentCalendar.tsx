@@ -14,10 +14,7 @@ interface Idea {
   updatedAt: string;
 }
 
-type View = "week" | "month";
-
 const DAYS_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-const MONTHS_ES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
 // Mejores horarios para publicar (según brief: mar-jue 14-18h)
 const OPTIMAL_DAYS = [1, 2, 3]; // Lun=0, Mar=1, Mié=2, Jue=3...
@@ -38,7 +35,6 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 export function ContentCalendar({ ideas }: { ideas: Idea[] }) {
-  const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduledIdeas, setScheduledIdeas] = useState<Record<string, string>>(() => {
     // Inicializar con fechas sugeridas automáticamente (mar/mié/jue en semanas siguientes)
@@ -48,7 +44,7 @@ export function ContentCalendar({ ideas }: { ideas: Idea[] }) {
     let dayInWeek = 0;
     const optDays = [1, 3, 5]; // Martes, Jueves, Sábado (índices de semana)
 
-    pending.forEach((idea, idx) => {
+    pending.forEach((idea) => {
       if (dayInWeek >= optDays.length) { dayInWeek = 0; weekOffset++; }
       const d = new Date();
       d.setDate(d.getDate() + weekOffset * 7 + optDays[dayInWeek] + 1);
@@ -158,7 +154,7 @@ export function ContentCalendar({ ideas }: { ideas: Idea[] }) {
                   }}
                   onDragOver={(e) => { if (!isPast) e.preventDefault(); }}
                   onDrop={() => { if (!isPast) handleDrop(day); }}
-                  onClick={() => !isPast && setSelectedDay(day)}
+                  onClick={() => !isPast && setSelectedDay(selectedDay && isSameDay(selectedDay, day) ? null : day)}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span
@@ -205,9 +201,37 @@ export function ContentCalendar({ ideas }: { ideas: Idea[] }) {
           </div>
 
           <div className="mt-3 flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
-            <span>★ Días óptimos: Martes, Miércoles, Jueves (14-18hs)</span>
-            <span>· Arrastrá ideas del panel derecho al día deseado</span>
+            <span>⭐ Días óptimos: Martes, Miércoles, Jueves (14-18hs)</span>
+            <span>· Arrastrá ideas al día deseado · Hacé click para ver detalles</span>
           </div>
+
+          {/* Panel de día seleccionado */}
+          {selectedDay && (
+            <div
+              className="mt-3 rounded-xl border p-4 space-y-2"
+              style={{ backgroundColor: "rgba(99,102,241,0.08)", borderColor: "rgba(99,102,241,0.25)" }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold" style={{ color: "var(--accent-primary)" }}>
+                  {selectedDay.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
+                </p>
+                <button onClick={() => setSelectedDay(null)} style={{ color: "var(--text-muted)" }} className="text-xs">✕</button>
+              </div>
+              {getIdeasForDay(selectedDay).length === 0 ? (
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Sin videos programados para este día. Arrastrá una idea desde el panel.</p>
+              ) : (
+                getIdeasForDay(selectedDay).map((idea) => (
+                  <div key={idea.id} className="text-xs flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                    <span style={{ color: statusColors[idea.status] ?? "var(--accent-primary)" }}>●</span>
+                    <span>{idea.title}</span>
+                    <span className="ml-auto" style={{ color: "var(--text-muted)" }}>
+                      {{ pending: "Pendiente", "in-progress": "En progreso", published: "Publicada", archived: "Archivada" }[idea.status] ?? idea.status}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Panel de ideas sin programar */}

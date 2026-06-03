@@ -8,11 +8,17 @@ import { z } from "zod";
 import { retrieveContext, buildRAGPrompt } from "@/lib/ai/rag";
 import { NEXUS_SYSTEM_PROMPT, buildUserContext } from "@/lib/ai/prompts";
 import { sanitizeForLLM } from "@/lib/security/sanitize";
-import { checkRateLimit } from "@/lib/security/rateLimit";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rateLimit";
 import { logAuditEvent } from "@/lib/security/audit";
+
+const HistoryMessageSchema = z.object({
+  role:    z.enum(["user", "assistant"]),
+  content: z.string().max(4000),
+});
 
 const RequestSchema = z.object({
   message: z.string().min(1).max(2000),
+  history: z.array(HistoryMessageSchema).max(20).default([]),
   context: z.object({
     nicheScore:            z.number().nullable().optional(),
     roadmapProgress:       z.number().min(0).max(100).default(0),
@@ -31,7 +37,7 @@ export async function POST(request: Request) {
   if (!rl.success) {
     return NextResponse.json(
       { error: "Demasiadas consultas. Esperá un minuto." },
-      { status: 429 }
+      { status: 429, headers: rateLimitHeaders(rl, "ai") }
     );
   }
 
@@ -47,7 +53,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const { message, context } = parsed.data;
+  const { message, history, context } = parsed.data;
   const { safe, sanitized } = sanitizeForLLM(message);
   if (!safe) {
     return NextResponse.json({ error: "Mensaje inválido" }, { status: 400 });
@@ -68,7 +74,7 @@ export async function POST(request: Request) {
   });
 
   const systemPrompt = NEXUS_SYSTEM_PROMPT.replace("{{USER_CONTEXT}}", userCtx);
-  const fullPrompt = buildRAGPrompt(systemPrompt, ragChunks, sanitized);
+  const fullPrompt = buildRAGPrompt(systemPrompt, ragChunks);
 
   // ─── Streaming SSE ────────────────────────────────────────
   const encoder = new TextEncoder();
@@ -77,13 +83,13 @@ export async function POST(request: Request) {
     async start(controller) {
       try {
         if (process.env.ANTHROPIC_API_KEY) {
-          await streamWithAnthropic(controller, encoder, fullPrompt, sanitized);
+          await streamWithAnthropic(controller, encoder, fullPrompt, sanitized, history);
         } else if (process.env.OPENAI_API_KEY) {
-          await streamWithOpenAI(controller, encoder, fullPrompt, sanitized);
+          await streamWithOpenAI(controller, encoder, fullPrompt, sanitized, history);
         } else {
           await streamMockResponse(controller, encoder, message, ragChunks);
         }
-      } catch (err) {
+      } catch {
         const errorMsg = `data: ${JSON.stringify({ error: "Error al generar respuesta" })}\n\n`;
         controller.enqueue(encoder.encode(errorMsg));
       } finally {
@@ -103,21 +109,30 @@ export async function POST(request: Request) {
   });
 }
 
+type HistoryMsg = { role: "user" | "assistant"; content: string };
+
 async function streamWithAnthropic(
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder,
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
+  history: HistoryMsg[] = []
 ) {
   const { default: Anthropic } = await import("@anthropic-ai/sdk");
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  type MsgParam = { role: "user" | "assistant"; content: string };
+  const messages: MsgParam[] = [
+    ...history.map((m) => ({ role: m.role, content: m.content })),
+    { role: "user", content: userMessage },
+  ];
 
   const stream = await client.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 2000,
     temperature: 0.3,
     system: systemPrompt,
-    messages: [{ role: "user", content: userMessage }],
+    messages,
   });
 
   for await (const chunk of stream) {
@@ -135,7 +150,8 @@ async function streamWithOpenAI(
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder,
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
+  history: HistoryMsg[] = []
 ) {
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -147,6 +163,7 @@ async function streamWithOpenAI(
     stream: true,
     messages: [
       { role: "system", content: systemPrompt },
+      ...history.map((m) => ({ role: m.role, content: m.content } as { role: "user" | "assistant"; content: string })),
       { role: "user",   content: userMessage },
     ],
   });

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChatMessage } from "@/types/ai";
+import { SourceCitation } from "./SourceCitation";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -107,6 +108,21 @@ function FormattedMessage({ content }: { content: string }) {
               <span>{formatInline(line.slice(2))}</span>
             </div>
           );
+        }
+
+        // FUENTE: Mentor — "quote" → SourceCitation component
+        if (line.startsWith("**FUENTE:**") || line.startsWith("**Fuente:**")) {
+          const rest = line.replace(/\*\*[Ff]uente:\*\*\s*/, "").trim();
+          // formato: AuthorName — "quote text" o AuthorName: "quote text"
+          const dashIdx = rest.indexOf(" — ");
+          const colonIdx = rest.indexOf(": ");
+          const sepIdx = dashIdx !== -1 ? dashIdx : colonIdx;
+          const author = sepIdx !== -1 ? rest.slice(0, sepIdx).trim() : rest;
+          const rawQuote = sepIdx !== -1 ? rest.slice(sepIdx + (dashIdx !== -1 ? 3 : 2)).trim() : "";
+          const quote = rawQuote.replace(/^[""]|[""]$/g, "").trim();
+          if (author) {
+            return <SourceCitation key={i} author={author} quote={quote || author} />;
+          }
         }
 
         if (line.startsWith("> ")) {

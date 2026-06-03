@@ -11,7 +11,11 @@ import {
   type ChannelType,
   type ContentLanguage,
   type RiskFlags,
+  type SampleVideo,
+  type TopChannel,
+  type AnalysisStats,
 } from "@/store/useEvaluatorStore";
+import { NicheAutocomplete } from "./NicheAutocomplete";
 import {
   calculateNicheScore,
   getVerdict,
@@ -64,8 +68,18 @@ export function NicheEvaluatorWizard() {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        store.updateScoringInputs(data.inputs as Partial<ScoringInputs>);
+        const data = await res.json() as {
+          inputs: Partial<ScoringInputs>;
+          sampleVideos: SampleVideo[];
+          topChannels: TopChannel[];
+          stats: AnalysisStats;
+        };
+        store.updateScoringInputs(data.inputs);
+        store.setApiResults({
+          sampleVideos: data.sampleVideos ?? [],
+          topChannels: data.topChannels ?? [],
+          stats: data.stats ?? null,
+        });
       }
     } catch {
       // Si falla el análisis, continuamos con scoring manual
@@ -126,19 +140,10 @@ export function NicheEvaluatorWizard() {
             <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
               Nombre del nicho *
             </label>
-            <input
-              type="text"
+            <NicheAutocomplete
               value={store.nicheName}
-              onChange={(e) => store.updateStep1({ nicheName: e.target.value })}
+              onChange={(val) => store.updateStep1({ nicheName: val })}
               placeholder="ej: Finanzas personales para millennials"
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none border transition-colors"
-              style={{
-                backgroundColor: "var(--bg-secondary)",
-                borderColor: "var(--border-default)",
-                color: "var(--text-primary)",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--border-default)")}
             />
           </div>
 
@@ -389,6 +394,65 @@ export function NicheEvaluatorWizard() {
             })}
           </div>
 
+          {/* Stats de la búsqueda */}
+          {store.analysisStats && !isAnalyzing && (
+            <div
+              className="rounded-xl p-4 border space-y-3"
+              style={{ backgroundColor: "rgba(16,185,129,0.06)", borderColor: "rgba(16,185,129,0.2)" }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--accent-success)" }}>
+                Resultados de la búsqueda en YouTube
+              </p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[
+                  { label: "Videos encontrados", value: store.analysisStats.totalVideosFound },
+                  { label: "Prom. de vistas",    value: store.analysisStats.avgViews > 1000 ? `${Math.round(store.analysisStats.avgViews / 1000)}K` : store.analysisStats.avgViews },
+                  { label: "Outlier detectado",  value: store.analysisStats.hasOutlier ? "Sí ✓" : "No" },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <p className="text-lg font-black" style={{ color: "var(--accent-success)" }}>{stat.value}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Videos de muestra */}
+          {store.sampleVideos.length > 0 && !isAnalyzing && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                Videos de referencia encontrados
+              </p>
+              <div className="space-y-2">
+                {store.sampleVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border"
+                    style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-default)" }}
+                  >
+                    {video.thumbnailUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={video.thumbnailUrl}
+                        alt={video.title}
+                        className="w-16 h-10 object-cover rounded flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                        {video.title}
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--accent-success)" }}>
+                        {video.viewCount.toLocaleString("es-AR")} vistas
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between pt-2">
             <Button variant="ghost" onClick={store.prevStep}>← Atrás</Button>
             <Button onClick={store.nextStep} size="lg">Ver competencia →</Button>
@@ -472,6 +536,140 @@ export function NicheEvaluatorWizard() {
               ))}
             </div>
           </div>
+
+          {/* Barreras de entrada */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+              Barreras de entrada al nicho
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 2, label: "Altas",  desc: "Saturado, difícil entrar",  color: "var(--accent-danger)" },
+                { value: 5, label: "Medias", desc: "Competencia manejable",      color: "var(--accent-warning)" },
+                { value: 8, label: "Bajas",  desc: "Nicho virgen, fácil entrar", color: "var(--accent-success)" },
+              ].map((opt) => {
+                const selected = (store.scoringInputs.entryBarriersScore ?? 5) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => store.updateScoringInputs({ entryBarriersScore: opt.value })}
+                    className="p-3 rounded-lg border text-center transition-all"
+                    style={{
+                      backgroundColor: selected ? `${opt.color}18` : "var(--bg-secondary)",
+                      borderColor: selected ? opt.color : "var(--border-default)",
+                    }}
+                  >
+                    <p className="text-sm font-bold" style={{ color: opt.color }}>{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{opt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Escalabilidad */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+              Escalabilidad del nicho
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 2, label: "Baja",   desc: "Difícil escalar ingresos",        color: "var(--accent-danger)" },
+                { value: 5, label: "Media",  desc: "Escalable con esfuerzo",           color: "var(--accent-warning)" },
+                { value: 8, label: "Alta",   desc: "Multi-canal, dubbing, afiliados",  color: "var(--accent-success)" },
+              ].map((opt) => {
+                const selected = (store.scoringInputs.scalabilityScore ?? 5) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => store.updateScoringInputs({ scalabilityScore: opt.value })}
+                    className="p-3 rounded-lg border text-center transition-all"
+                    style={{
+                      backgroundColor: selected ? `${opt.color}18` : "var(--bg-secondary)",
+                      borderColor: selected ? opt.color : "var(--border-default)",
+                    }}
+                  >
+                    <p className="text-sm font-bold" style={{ color: opt.color }}>{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{opt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Producción con IA */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+              Viabilidad de producción con IA
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 3, label: "Requiere cara",  desc: "Cámara frontal obligatoria",    color: "var(--accent-danger)" },
+                { value: 5, label: "Parcial",        desc: "Voz propia + B-roll IA",         color: "var(--accent-warning)" },
+                { value: 8, label: "100% IA",        desc: "Canal sin rostro full IA",        color: "var(--accent-success)" },
+              ].map((opt) => {
+                const selected = (store.scoringInputs.aiProductionScore ?? 6) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => store.updateScoringInputs({ aiProductionScore: opt.value })}
+                    className="p-3 rounded-lg border text-center transition-all"
+                    style={{
+                      backgroundColor: selected ? `${opt.color}18` : "var(--bg-secondary)",
+                      borderColor: selected ? opt.color : "var(--border-default)",
+                    }}
+                  >
+                    <p className="text-sm font-bold" style={{ color: opt.color }}>{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{opt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Canales competidores encontrados */}
+          {store.topChannels.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                Canales competidores encontrados ({store.topChannels.length})
+              </p>
+              <div className="space-y-2">
+                {store.topChannels.map((ch) => {
+                  const subs = ch.subscriberCount;
+                  const subsStr = subs >= 1_000_000
+                    ? `${(subs / 1_000_000).toFixed(1)}M`
+                    : subs >= 1_000
+                    ? `${Math.round(subs / 1_000)}K`
+                    : subs.toString();
+                  const isSmall = subs < 100_000;
+                  return (
+                    <div
+                      key={ch.id}
+                      className="flex items-center gap-3 p-2.5 rounded-lg border"
+                      style={{
+                        backgroundColor: isSmall ? "rgba(16,185,129,0.06)" : "rgba(239,68,68,0.06)",
+                        borderColor: isSmall ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)",
+                      }}
+                    >
+                      {ch.thumbnailUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={ch.thumbnailUrl} alt={ch.title} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                      )}
+                      <span className="flex-1 text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                        {ch.title}
+                      </span>
+                      <span className="text-xs font-bold flex-shrink-0" style={{ color: isSmall ? "var(--accent-success)" : "var(--accent-danger)" }}>
+                        {subsStr} subs
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Verde = menos de 100K subs (oportunidad). Rojo = competidor fuerte.
+              </p>
+            </div>
+          )}
 
           <div className="flex justify-between pt-2">
             <Button variant="ghost" onClick={store.prevStep}>← Atrás</Button>

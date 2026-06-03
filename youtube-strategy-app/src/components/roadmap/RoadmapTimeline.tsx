@@ -25,6 +25,13 @@ const TOOL_MAP: Record<number, Record<number, string>> = {
   3: { 1: "Orgánico", 2: "YouTube Studio", 3: "Hotmart / Amazon", 4: "NEXUS + Dubbing IA" },
 };
 
+const TIME_MAP: Record<number, Record<number, string>> = {
+  0: { 1: "10 min", 2: "15 min", 3: "30 min", 4: "45 min", 5: "20 min" },
+  1: { 1: "45 min", 2: "60 min", 3: "90 min", 4: "60 min", 5: "30 min" },
+  2: { 1: "90 min", 2: "45 min", 3: "20 min", 4: "Orgánico", 5: "30 min" },
+  3: { 1: "20 min", 2: "30 min", 3: "60 min", 4: "45 min" },
+};
+
 export function RoadmapTimeline() {
   const { items, isLoading, progress, toggleTask } = useActionItems();
 
@@ -124,6 +131,8 @@ export function RoadmapTimeline() {
                         <button
                           key={task.id}
                           onClick={() => toggleTask(task.id, completed)}
+                          aria-label={`${completed ? "Desmarcar" : "Completar"}: ${task.description}`}
+                          aria-pressed={completed}
                           className="w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-all hover:opacity-90 active:scale-[0.99]"
                           style={{
                             backgroundColor: completed ? `${cfg.color}10` : "var(--bg-card)",
@@ -153,11 +162,18 @@ export function RoadmapTimeline() {
                             >
                               {task.description}
                             </p>
-                            {tool && (
-                              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                                🔧 {tool}
-                              </p>
-                            )}
+                            <div className="flex items-center gap-3 mt-1 flex-wrap">
+                              {tool && (
+                                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                  🔧 {tool}
+                                </span>
+                              )}
+                              {TIME_MAP[task.phase]?.[task.step] && (
+                                <span className="text-xs" style={{ color: "var(--accent-warning)" }}>
+                                  ⏱ {TIME_MAP[task.phase][task.step]}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </button>
                       );
