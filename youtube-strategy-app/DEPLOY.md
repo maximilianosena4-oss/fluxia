@@ -1,4 +1,4 @@
-# NEXUS — Guía de Deploy en Vercel
+# FluxIA — Guía de Deploy en Vercel
 
 ## Pre-requisitos completados
 - [x] Supabase PostgreSQL configurado
@@ -12,7 +12,7 @@
 
 ```bash
 cd "C:\Users\Maxi\Documents\Proyecto youtube desde cero\Proyecto Web para contenido"
-git remote add origin https://github.com/TU_USUARIO/nexus-youtube.git
+git remote add origin https://github.com/TU_USUARIO/fluxia.git
 git push -u origin master
 ```
 
@@ -21,7 +21,7 @@ git push -u origin master
 ## PASO 2 — Crear cuenta en Vercel
 
 1. Ir a **vercel.com** → Sign Up con GitHub
-2. **New Project** → importar el repo `nexus-youtube`
+2. **New Project** → importar el repo `fluxia`
 3. Vercel detecta automáticamente Next.js
 
 ---

@@ -30,7 +30,7 @@ export default async function ConsultantPage() {
     <div className="max-w-5xl mx-auto">
       <div className="mb-6 space-y-1">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-          Consultor IA — NEXUS
+          Consultor IA — FluxIA
         </h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Respuestas concretas en segundos · Basado en los 5 mentores

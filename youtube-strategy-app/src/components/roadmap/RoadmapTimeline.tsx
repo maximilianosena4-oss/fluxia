@@ -19,10 +19,10 @@ const PHASE_CONFIG: PhaseConfig[] = [
 ];
 
 const TOOL_MAP: Record<number, Record<number, string>> = {
-  0: { 1: "NEXUS Evaluador", 2: "viralyt.ai", 3: "YouTube", 4: "NEXUS + YouTube", 5: "Notion" },
+  0: { 1: "FluxIA Evaluador", 2: "viralyt.ai", 3: "YouTube", 4: "FluxIA + YouTube", 5: "Notion" },
   1: { 1: "YouTube Studio", 2: "Canva", 3: "Claude AI + CapCut", 4: "Canva + YT Studio", 5: "YouTube Analytics" },
-  2: { 1: "Claude AI + CapCut", 2: "Canva + YT Studio", 3: "YouTube Analytics", 4: "Orgánico", 5: "NEXUS" },
-  3: { 1: "Orgánico", 2: "YouTube Studio", 3: "Hotmart / Amazon", 4: "NEXUS + Dubbing IA" },
+  2: { 1: "Claude AI + CapCut", 2: "Canva + YT Studio", 3: "YouTube Analytics", 4: "Orgánico", 5: "FluxIA" },
+  3: { 1: "Orgánico", 2: "YouTube Studio", 3: "Hotmart / Amazon", 4: "FluxIA + Dubbing IA" },
 };
 
 const TIME_MAP: Record<number, Record<number, string>> = {

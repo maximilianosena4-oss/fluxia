@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     const existingItems = await prisma.actionItem.count({ where: { channelId: channel.id } });
     if (existingItems === 0) {
       const ROADMAP_SEED = [
-        { phase: 0, step: 1, description: "Completar evaluación de nicho en NEXUS Evaluador" },
+        { phase: 0, step: 1, description: "Completar evaluación de nicho en FluxIA Evaluador" },
         { phase: 0, step: 2, description: "Validar en viralyt.ai (confirmar outliers reales)" },
         { phase: 0, step: 3, description: "Identificar 10 mejores canales de referencia" },
         { phase: 0, step: 4, description: "Aplicar Outlier Test a los 3 canales top" },
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
         { phase: 2, step: 2, description: "Optimizar thumbnails con CTR < 3%" },
         { phase: 2, step: 3, description: "Replicar formato del video con mejor retención" },
         { phase: 2, step: 4, description: "Llegar a 500 suscriptores" },
-        { phase: 2, step: 5, description: "Revisar métricas semanales con NEXUS" },
+        { phase: 2, step: 5, description: "Revisar métricas semanales con FluxIA" },
         { phase: 3, step: 1, description: "Alcanzar 1.000 subs + 4.000h de visualización" },
         { phase: 3, step: 2, description: "Aplicar al Programa de Socios de YouTube" },
         { phase: 3, step: 3, description: "Activar primera fuente alternativa (afiliados o producto)" },

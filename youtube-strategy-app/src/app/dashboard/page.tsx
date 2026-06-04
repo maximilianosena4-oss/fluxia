@@ -261,7 +261,7 @@ export default async function DashboardPage() {
               ¿Tenés dudas?
             </p>
             <Button asChild variant="secondary" size="sm" className="w-full">
-              <Link href="/dashboard/consultant">Preguntale a NEXUS</Link>
+              <Link href="/dashboard/consultant">Preguntale a FluxIA</Link>
             </Button>
           </div>
         </div>

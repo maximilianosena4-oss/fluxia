@@ -94,7 +94,7 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
       });
 
       if (!res.ok || !res.body) {
-        updateStreamingMessage(sessionId, assistantMsgId, "Error al conectar con NEXUS. Intentá de nuevo.");
+        updateStreamingMessage(sessionId, assistantMsgId, "Error al conectar con FluxIA. Intentá de nuevo.");
         finalizeStreamingMessage(sessionId, assistantMsgId);
         return;
       }
@@ -229,11 +229,11 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
                     background: "linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))",
                   }}
                 >
-                  N
+                  F
                 </div>
                 <div>
                   <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                    Soy NEXUS
+                    Soy FluxIA
                   </h2>
                   <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
                     Tu consultor IA de YouTube. Preguntame lo que quieras sobre<br />
@@ -303,7 +303,7 @@ export function ChatInterface({ initialContext }: ChatInterfaceProps) {
                 disabled={isStreaming}
                 rows={2}
                 placeholder="Escribí tu consulta... (Enter para enviar)"
-                aria-label="Mensaje para el consultor NEXUS"
+                aria-label="Mensaje para el consultor FluxIA"
                 aria-disabled={isStreaming}
                 className="flex-1 resize-none rounded-xl px-4 py-3 text-sm outline-none border transition-colors"
                 style={{

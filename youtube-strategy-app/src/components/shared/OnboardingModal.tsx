@@ -15,13 +15,13 @@ interface Step {
 const STEPS: Step[] = [
   {
     emoji: "👋",
-    title: "Bienvenido a NEXUS",
+    title: "Bienvenido a FluxIA",
     description: "Tu consultor IA de YouTube. 12 secciones para llevarte de cero a monetización en 90 días. Empezá por el Evaluador de Nicho — define el 80% de tu éxito.",
   },
   {
     emoji: "⚡",
     title: "Paso 1: Evaluá tu nicho",
-    description: "Wizard de 5 pasos con scoring de 96 puntos. NEXUS busca en YouTube API en tiempo real y valida con los criterios de los 5 mentores. Resultado: GO / REFINE / DISCARD.",
+    description: "Wizard de 5 pasos con scoring de 96 puntos. FluxIA busca en YouTube API en tiempo real y valida con los criterios de los 5 mentores. Resultado: GO / REFINE / DISCARD.",
     action: { label: "Evaluar mi nicho →", href: "/dashboard/evaluator" },
   },
   {
@@ -49,7 +49,7 @@ const STEPS: Step[] = [
   },
 ];
 
-const ONBOARDING_KEY = "nexus_onboarding_v1";
+const ONBOARDING_KEY = "fluxia_onboarding_v1";
 
 export function OnboardingModal() {
   const [visible, setVisible] = useState(false);

@@ -219,7 +219,7 @@ function getMockVideos(query: string, count = 5): YouTubeVideo[] {
     title: `[DEMO] ${i === 0 ? "Cómo ganar $1,000 con " : i === 1 ? "El secreto de " : `${i + 1} tips de `}"${query}"`,
     description: `Video de demostración sobre ${query}.`,
     channelId: `mock-channel-${i % 3}`,
-    channelTitle: [`Canal Demo 1`, `Experto en ${query}`, `NEXUS Test`][i % 3],
+    channelTitle: [`Canal Demo 1`, `Experto en ${query}`, `FluxIA Test`][i % 3],
     thumbnailUrl: `https://picsum.photos/seed/${encodeURIComponent(query)}${i}/320/180`,
     viewCount: [850000, 230000, 1200000, 45000, 380000][i % 5],
     likeCount: Math.floor([850000, 230000, 1200000, 45000, 380000][i % 5] * 0.04),

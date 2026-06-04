@@ -11,7 +11,7 @@ export default function ComparatorPage() {
           Comparador de Nichos
         </h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Ingresá 2 o 3 nichos y comparalos lado a lado con el modelo de evaluación NEXUS.
+          Ingresá 2 o 3 nichos y comparalos lado a lado con el modelo de evaluación FluxIA.
         </p>
       </div>
 

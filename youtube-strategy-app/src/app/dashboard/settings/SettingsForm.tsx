@@ -133,7 +133,7 @@ export function SettingsForm({ user, channel, stats, integrations }: Props) {
         <CardHeader>
           <CardTitle>Canal de YouTube</CardTitle>
           <CardDescription>
-            Vinculá tu canal para que NEXUS use tus métricas reales
+            Vinculá tu canal para que FluxIA use tus métricas reales
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

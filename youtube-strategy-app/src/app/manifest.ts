@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "NEXUS — YouTube Strategy Consultant",
-    short_name: "NEXUS",
+    name: "FluxIA — YouTube Strategy Consultant",
+    short_name: "FluxIA",
     description: "Tu consultor IA de YouTube. De cero a monetización, paso a paso.",
     start_url: "/dashboard",
     display: "standalone",

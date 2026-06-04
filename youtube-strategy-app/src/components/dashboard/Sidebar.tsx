@@ -135,10 +135,10 @@ export function Sidebar() {
             background: "linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))",
           }}
         >
-          N
+          F
         </div>
         <span className="font-bold text-lg" style={{ color: "var(--text-primary)" }}>
-          NEXUS
+          FluxIA
         </span>
       </div>
 

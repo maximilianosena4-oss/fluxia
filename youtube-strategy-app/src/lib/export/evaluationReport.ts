@@ -25,7 +25,7 @@ export function generateEvaluationReport(data: ReportData): string {
 
   return `
 ╔══════════════════════════════════════════════════════════════╗
-║           REPORTE DE EVALUACIÓN DE NICHO — NEXUS             ║
+║           REPORTE DE EVALUACIÓN DE NICHO — FLUXIA            ║
 ╚══════════════════════════════════════════════════════════════╝
 
 Fecha: ${data.evaluationDate}
@@ -75,9 +75,9 @@ ${data.verdict === "GO" ? `  1. Validar en viralyt.ai para confirmar outliers
   5. Crear el canal y publicar el primer video` : data.verdict === "REFINE" ? `  1. Revisar los criterios con score más bajo en el desglose
   2. Buscar un sub-nicho más específico con menos competencia
   3. Investigar el potencial de RPM del nicho
-  4. Re-evaluar con NEXUS después de los ajustes` : `  1. No invertir tiempo ni dinero en este nicho
+  4. Re-evaluar con FluxIA después de los ajustes` : `  1. No invertir tiempo ni dinero en este nicho
   2. Buscar un nicho con mayor demanda y menor competencia
-  3. Usar el Consultor NEXUS para explorar alternativas
+  3. Usar el Consultor FluxIA para explorar alternativas
   4. Recordar: el nicho correcto es el 80% del éxito`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -89,7 +89,7 @@ Basado en metodologías de:
   • Alex Hormozi (@AlexHormozi) — Oferta primero
   • MrBeast (@MrBeast) — Outlier Test + Packaging
 
-Generado con NEXUS — YouTube Strategy Consultant
+Generado con FluxIA — YouTube Strategy Consultant
 `.trim();
 }
 

@@ -1,4 +1,3 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 // Orígenes permitidos en producción — brief sección 7.5
@@ -39,7 +38,7 @@ const corsHeaders = (origin: string) => [
 
 const nextConfig: NextConfig = {
   turbopack: {
-    root: path.resolve(__dirname),
+    root: process.cwd(),
   },
   async headers() {
     const apiCorsRules = ALLOWED_ORIGINS.map((origin) => ({

@@ -75,9 +75,9 @@ export function MobileSidebar() {
               className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black text-white"
               style={{ background: "linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))" }}
             >
-              N
+              F
             </div>
-            <span className="font-bold" style={{ color: "var(--text-primary)" }}>NEXUS</span>
+            <span className="font-bold" style={{ color: "var(--text-primary)" }}>FluxIA</span>
           </div>
           <button onClick={() => setOpen(false)} style={{ color: "var(--text-muted)" }}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

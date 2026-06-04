@@ -714,7 +714,7 @@ export function NicheEvaluatorWizard() {
               className="flex-1"
               onClick={() => router.push("/dashboard/consultant?from=evaluator")}
             >
-              Consultar a NEXUS
+              Consultar a FluxIA
             </Button>
             <Button
               className="flex-1"

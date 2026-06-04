@@ -318,7 +318,7 @@ export function NicheComparator() {
             </Card>
 
             <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-              Puntajes generados con el modelo de evaluación NEXUS (96 pts máx). Evaluación profunda disponible en Evaluar Nicho.
+              Puntajes generados con el modelo de evaluación FluxIA (96 pts máx). Evaluación profunda disponible en Evaluar Nicho.
             </p>
           </motion.div>
         )}

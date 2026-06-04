@@ -92,7 +92,7 @@ export function ScoreCard({ score, verdict, nicheName, language = "ES", channelT
       });
       const slug = nicheName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
       const date = new Date().toISOString().split("T")[0];
-      downloadReport(report, `NEXUS_evaluacion_${slug}_${date}.txt`);
+      downloadReport(report, `FluxIA_evaluacion_${slug}_${date}.txt`);
       toast.success("Reporte descargado");
     } catch {
       toast.error("Error al generar el reporte");
@@ -269,7 +269,7 @@ export function ScoreCard({ score, verdict, nicheName, language = "ES", channelT
           variant="secondary"
           size="sm"
           onClick={() => {
-            const text = `Evalué mi nicho "${nicheName}" con NEXUS: ${score.total}/96 pts. ${getVerdictMessage(verdict)}`;
+            const text = `Evalué mi nicho "${nicheName}" con FluxIA: ${score.total}/96 pts. ${getVerdictMessage(verdict)}`;
             void navigator.clipboard.writeText(text);
             toast.success("Resultado copiado");
           }}

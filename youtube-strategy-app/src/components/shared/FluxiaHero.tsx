@@ -1,34 +1,43 @@
 "use client";
 
-// ─────────────────────────────────────────────────────────
-// FLUXIA HERO — Matrix Edition
-// Componente: título hero animado con lluvia de código
-// Marca: FluxIA | YouTube Intelligence
-// ─────────────────────────────────────────────────────────
-
 import { useEffect, useRef } from "react";
+
+function IASvg({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? "fluxia-svg-ia"}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 -12 150 122"
+    >
+      <rect x="4"  y="6"  width="46" height="15" fill="#00f0ff" />
+      <rect x="4"  y="79" width="46" height="15" fill="#00f0ff" />
+      <rect x="19" y="6"  width="16" height="88" fill="#00f0ff" />
+      <polyline
+        points="64,94 102,6 140,94"
+        fill="none"
+        stroke="#00f0ff"
+        strokeWidth="16"
+        strokeLinejoin="miter"
+        strokeLinecap="butt"
+        strokeMiterlimit="8"
+      />
+    </svg>
+  );
+}
 
 export function FluxiaHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // ─────────────────────────────────────────────────────
-    // FLUXIA MATRIX RAIN
-    // Canvas animation — lluvia de código estilo Matrix
-    // Caracteres: hexadecimal + katakana + símbolos matemáticos
-    // Paleta: verde Matrix dominante + destellos cyan y blanco
-    // ─────────────────────────────────────────────────────
-
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const CHARS =
       "0123456789ABCDEF" +
       "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン" +
-      "ΣΔΩ∞±∫×∑«→ ↑↓←↔";
+      "ΣΔΩ∞±∫×∑«→↑↓←↔";
 
     const FS = 14;
     let cols = 0;
@@ -49,10 +58,8 @@ export function FluxiaHero() {
 
     function draw() {
       if (!ctx || !canvas) return;
-
       ctx.fillStyle = "rgba(0, 0, 0, 0.045)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.font = `${FS}px monospace`;
 
       for (let i = 0; i < cols; i++) {
@@ -79,42 +86,37 @@ export function FluxiaHero() {
         ctx.fillText(ch, x, y);
         ctx.shadowBlur = 0;
 
-        if (y > canvas.height && Math.random() > 0.974) {
-          drops[i] = 0;
-        }
+        if (y > canvas.height && Math.random() > 0.974) drops[i] = 0;
         drops[i] += 0.45;
       }
     }
 
     const intervalId = setInterval(draw, 38);
-
     return () => {
       clearInterval(intervalId);
       window.removeEventListener("resize", resize);
     };
-
-    // ─────────────────────────────────────────────────────
-    // FIN FLUXIA MATRIX RAIN
-    // ─────────────────────────────────────────────────────
   }, []);
 
   return (
     <>
-      {/* ─────────────────────────────────────────────────
-          FLUXIA HERO — Matrix Edition
-          Componente: título hero animado
-          Marca: FluxIA | YouTube Intelligence
-          ───────────────────────────────────────────────── */}
-
       <canvas ref={canvasRef} id="fluxia-matrix" />
       <div className="fluxia-overlay" />
 
       <section className="fluxia-hero">
         <div className="fluxia-logo">
           <span className="fluxia-flux">Flux</span>
-          <span className="fluxia-i">I</span>
-          <span className="fluxia-a">A</span>
+          <IASvg />
         </div>
+
+        <div className="fluxia-floor-ref" aria-hidden="true">
+          <div className="fluxia-logo">
+            <span className="fluxia-flux">Flux</span>
+            <IASvg className="fluxia-svg-ia fluxia-svg-ia--ref" />
+          </div>
+          <div className="fluxia-ref-mask" />
+        </div>
+
         <p className="fluxia-subtitle">
           Análisis de Contenido
           <span className="fluxia-dot">·</span>

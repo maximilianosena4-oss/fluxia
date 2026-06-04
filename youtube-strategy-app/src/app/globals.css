@@ -159,17 +159,14 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────
-   FLUXIA HERO STYLES
-   Componente: hero animado FluxIA Matrix
-   NO modificar clases fuera de este bloque
+   FLUXIA HERO STYLES — SVG Edition
+   Componente: hero animado FluxIA Matrix (login page)
    ───────────────────────────────────────────────────────── */
 
 #fluxia-matrix {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   z-index: 0;
 }
 
@@ -179,18 +176,8 @@ body {
   z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(
-      ellipse at center,
-      transparent 30%,
-      rgba(0, 0, 0, 0.75) 100%
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0, 0, 0, 0.06) 3px,
-      rgba(0, 0, 0, 0.06) 4px
-    );
+    radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.75) 100%),
+    repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0, 0, 0, 0.06) 3px, rgba(0, 0, 0, 0.06) 4px);
 }
 
 .fluxia-hero {
@@ -202,9 +189,9 @@ body {
   align-items: center;
   justify-content: center;
   padding-top: 8vh;
-  gap: 28px;
+  gap: 16px;
   animation: fluxiaHeroIn 1.2s ease forwards;
-  pointer-events: none; /* no bloquear el login card debajo */
+  pointer-events: none;
 }
 
 @keyframes fluxiaHeroIn {
@@ -217,15 +204,14 @@ body {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  filter: drop-shadow(0 0 30px rgba(0, 245, 255, 0.3));
 }
 
-/* FLUX — blanco con glow pulsante */
+/* FLUX — Exo 2, blanco */
 .fluxia-flux {
-  font-family: 'Arial Black', 'Impact', sans-serif;
-  font-size: clamp(64px, 11vw, 148px);
-  font-weight: 900;
-  color: #FFFFFF;
+  font-family: var(--font-exo2), 'Exo 2', 'Arial Black', sans-serif;
+  font-size: clamp(56px, 10vw, 130px);
+  font-weight: 700;
+  color: #ffffff;
   text-shadow:
     0 0 8px  rgba(255, 255, 255, 0.9),
     0 0 20px rgba(255, 255, 255, 0.5),
@@ -233,73 +219,67 @@ body {
   animation: fluxiaFluxGlow 3s ease-in-out infinite;
 }
 
-/* I — serif cursiva, cian eléctrico */
-.fluxia-i {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: clamp(64px, 11vw, 148px);
-  font-weight: 900;
-  font-style: italic;
-  color: #00EFFF;
-  text-shadow:
-    0 0 8px  #00EFFF,
-    0 0 20px #00CFFF,
-    0 0 50px #0099FF,
-    0 0 90px rgba(0, 180, 255, 0.4);
-  animation: fluxiaIAGlow 2.5s ease-in-out infinite;
+/* SVG "IA" — geometría exacta, cyan neón */
+.fluxia-svg-ia {
+  display: inline-block;
+  vertical-align: middle;
+  height: 0.82em;
+  width: auto;
+  margin-left: 0.04em;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.8))
+          drop-shadow(0 0 30px rgba(0, 240, 255, 0.5))
+          drop-shadow(0 0 60px rgba(0, 240, 255, 0.3));
+  animation: fluxiaNeonPulse 3s ease-in-out infinite alternate;
 }
 
-/* A — bold, cian con glow violeta */
-.fluxia-a {
-  font-family: 'Arial Black', 'Impact', sans-serif;
-  font-size: clamp(64px, 11vw, 148px);
-  font-weight: 900;
-  color: #00EFFF;
-  -webkit-text-stroke: 2px rgba(0, 240, 255, 0.35);
-  text-shadow:
-    0 0 8px  #00EFFF,
-    0 0 20px #00CFFF,
-    0 0 50px #8B00FF,
-    0 0 100px rgba(0, 180, 255, 0.5);
-  animation: fluxiaIAGlow 2.5s ease-in-out infinite;
+/* Variante para el reflejo — delay sutil */
+.fluxia-svg-ia--ref {
+  animation: fluxiaNeonPulse 3s ease-in-out -0.5s infinite alternate;
+}
+
+@keyframes fluxiaNeonPulse {
+  0%   { filter: drop-shadow(0 0 6px rgba(0,240,255,.5)) drop-shadow(0 0 16px rgba(0,240,255,.3)); }
+  100% { filter: drop-shadow(0 0 18px rgba(0,240,255,1)) drop-shadow(0 0 42px rgba(0,240,255,.65)) drop-shadow(0 0 80px rgba(0,240,255,.3)); }
 }
 
 @keyframes fluxiaFluxGlow {
   0%, 100% {
-    text-shadow:
-      0 0 8px  rgba(255, 255, 255, 0.9),
-      0 0 20px rgba(255, 255, 255, 0.5),
-      0 0 50px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 8px rgba(255,255,255,.9), 0 0 20px rgba(255,255,255,.5), 0 0 50px rgba(255,255,255,.2);
   }
   50% {
-    text-shadow:
-      0 0 12px rgba(255, 255, 255, 1),
-      0 0 35px rgba(255, 255, 255, 0.7),
-      0 0 70px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 12px rgba(255,255,255,1), 0 0 35px rgba(255,255,255,.7), 0 0 70px rgba(255,255,255,.3);
   }
 }
 
-@keyframes fluxiaIAGlow {
-  0%, 100% {
-    color: #00EFFF;
-    text-shadow:
-      0 0 8px  #00EFFF,
-      0 0 20px #00CFFF,
-      0 0 50px #0099FF,
-      0 0 90px rgba(0, 180, 255, 0.4);
-  }
-  50% {
-    color: #55FFFF;
-    text-shadow:
-      0 0 14px #00FFFF,
-      0 0 35px #00DDFF,
-      0 0 70px #BF00FF,
-      0 0 120px rgba(0, 200, 255, 0.6);
-  }
+/* Reflejo de suelo */
+.fluxia-floor-ref {
+  position: relative;
+  transform: scaleY(-1) rotateX(52deg);
+  transform-origin: top center;
+  opacity: 0.28;
+  filter: blur(1.8px);
+  pointer-events: none;
+  margin-top: 4px;
+  animation: fluxiaShimmerRef 4.5s ease-in-out infinite;
+}
+
+.fluxia-ref-mask {
+  position: absolute;
+  top: 0; left: -40%;
+  width: 180%; height: 100%;
+  background: linear-gradient(to bottom, rgba(0,240,255,.25) 0%, transparent 65%);
+  z-index: 2; pointer-events: none;
+}
+
+@keyframes fluxiaShimmerRef {
+  0%,100% { opacity: 0.2; filter: blur(1.8px) brightness(0.9); }
+  50%      { opacity: 0.38; filter: blur(1.4px) brightness(1.2); }
 }
 
 /* Subtítulo */
 .fluxia-subtitle {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', 'Courier New', monospace;
   font-size: clamp(11px, 1.6vw, 20px);
   letter-spacing: 0.22em;
   color: #aaaaaa;

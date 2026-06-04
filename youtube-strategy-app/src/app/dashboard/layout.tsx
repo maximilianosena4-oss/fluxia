@@ -9,7 +9,7 @@ import type { AppUser } from "@/types";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: { default: "Dashboard", template: "%s | NEXUS" },
+  title: { default: "Dashboard", template: "%s | FluxIA" },
 };
 
 export default async function DashboardLayout({

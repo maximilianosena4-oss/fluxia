@@ -107,7 +107,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
             className="fixed top-[18vh] left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4"
             role="dialog"
             aria-modal="true"
-            aria-label="Búsqueda global de NEXUS"
+            aria-label="Búsqueda global de FluxIA"
           >
             <div
               className="rounded-2xl border shadow-2xl overflow-hidden"
@@ -135,7 +135,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                   ref={inputRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar en NEXUS…"
+                  placeholder="Buscar en FluxIA…"
                   className="flex-1 bg-transparent text-sm outline-none"
                   style={{ color: "var(--text-primary)" }}
                 />

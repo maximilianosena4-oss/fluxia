@@ -1,0 +1,343 @@
+/* ── FluxIA Landing — estilos scoped con prefijo flx- ─────────────────── */
+/* Variables de la paleta FluxIA */
+.flx-root {
+  --flx-cyan:  #00f0ff;
+  --flx-green: #00ff41;
+  --flx-surf1: rgba(0,8,5,0.82);
+  --flx-surf2: rgba(0,4,3,0.90);
+  --flx-bdr:   rgba(0,240,255,0.16);
+  --flx-bdr2:  rgba(0,240,255,0.32);
+  --flx-body:  #9ab0a4;
+  --flx-muted: #4a6055;
+
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Navbar ─────────────────────────────────────────────────────────────── */
+.flx-navbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 62px;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--flx-bdr);
+}
+.flx-nav-brand {
+  font-family: var(--font-exo2), 'Exo 2', sans-serif;
+  font-size: 1.45rem; font-weight: 800;
+  color: #fff; text-decoration: none;
+  letter-spacing: 1px;
+}
+.flx-nav-ia { color: var(--flx-cyan); }
+.flx-nav-links { display: flex; gap: 34px; list-style: none; }
+.flx-nav-links a {
+  color: #6a8078; text-decoration: none;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: 0.72rem; letter-spacing: 2.5px;
+  text-transform: uppercase; transition: color .25s;
+}
+.flx-nav-links a:hover,
+.flx-nav-links a.flx-active { color: var(--flx-cyan); }
+.flx-nav-btn {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--flx-cyan); border: 1px solid var(--flx-cyan);
+  background: transparent; padding: 9px 22px;
+  cursor: pointer; text-decoration: none;
+  transition: all .3s; display: inline-block;
+}
+.flx-nav-btn:hover {
+  background: rgba(0,240,255,0.08);
+  box-shadow: 0 0 20px rgba(0,240,255,0.2);
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.flx-hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding-top: 62px;
+}
+.flx-hero-content {
+  display: flex; flex-direction: column; align-items: center;
+  perspective: 1200px;
+  animation: flxFadeUp .9s ease-out forwards;
+}
+
+/* Logo */
+.flx-logo {
+  font-family: var(--font-exo2), 'Exo 2', sans-serif;
+  font-size: 6rem; font-weight: 700;
+  line-height: 1; letter-spacing: 1px;
+  display: flex; align-items: center;
+  user-select: none;
+}
+.flx-flux { color: #fff; }
+.flx-svg-ia {
+  display: inline-block;
+  vertical-align: middle;
+  height: .82em; width: auto;
+  margin-left: .04em;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(0,240,255,.8))
+          drop-shadow(0 0 30px rgba(0,240,255,.5))
+          drop-shadow(0 0 60px rgba(0,240,255,.3));
+  animation: flxNeonPulse 3s ease-in-out infinite alternate;
+}
+
+/* Subtítulo */
+.flx-hero-sub {
+  color: #505a55;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .82rem; letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-top: 18px; text-align: center;
+}
+
+/* Reflejo de suelo */
+.flx-floor-ref {
+  position: relative;
+  transform: scaleY(-1) rotateX(52deg);
+  transform-origin: top center;
+  opacity: .28; filter: blur(1.8px);
+  pointer-events: none; margin-top: 6px;
+  animation: flxShimmer 4.5s ease-in-out infinite;
+}
+.flx-floor-ref .flx-svg-ia {
+  animation: flxNeonPulse 3s ease-in-out -.5s infinite alternate;
+}
+.flx-ref-mask {
+  position: absolute; top: 0; left: -40%;
+  width: 180%; height: 100%;
+  background: linear-gradient(to bottom, rgba(0,240,255,.25) 0%, transparent 65%);
+  z-index: 2; pointer-events: none;
+}
+
+/* Scroll CTA */
+.flx-hero-scroll {
+  position: absolute; bottom: 38px;
+  left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.flx-scroll-label {
+  color: var(--flx-muted);
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .68rem; letter-spacing: 5px; text-transform: uppercase;
+}
+.flx-scroll-arrow {
+  width: 18px; height: 18px;
+  border-right: 1.5px solid var(--flx-cyan);
+  border-bottom: 1.5px solid var(--flx-cyan);
+  transform: rotate(45deg);
+  animation: flxBounce 2s ease-in-out infinite;
+  cursor: pointer;
+}
+
+/* ── Shared section utils ────────────────────────────────────────────────── */
+.flx-section { position: relative; z-index: 1; }
+.flx-wrap { max-width: 1200px; margin: 0 auto; padding: 88px 44px; }
+.flx-sec-tag {
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .68rem; letter-spacing: 5px;
+  text-transform: uppercase; color: var(--flx-cyan);
+  margin-bottom: 14px;
+}
+.flx-sec-title {
+  font-size: 2.1rem; font-weight: 700;
+  line-height: 1.25; margin-bottom: 16px;
+}
+.flx-sec-title em { color: var(--flx-cyan); font-style: normal; }
+.flx-sec-desc {
+  color: var(--flx-body); font-size: .95rem;
+  line-height: 1.75; max-width: 560px;
+}
+
+/* ── Features ────────────────────────────────────────────────────────────── */
+.flx-s-features {
+  background: var(--flx-surf1);
+  border-top: 1px solid var(--flx-bdr);
+}
+.flx-cards-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 22px; margin-top: 56px;
+}
+.flx-card {
+  background: rgba(0,10,7,.65);
+  border: 1px solid var(--flx-bdr);
+  padding: 30px 22px;
+  position: relative; overflow: hidden;
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+}
+.flx-card::after {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--flx-cyan), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.flx-card:hover { transform: translateY(-5px); border-color: var(--flx-bdr2); box-shadow: 0 0 36px rgba(0,240,255,.07); }
+.flx-card:hover::after { opacity: 1; }
+.flx-card-icon {
+  width: 42px; height: 42px;
+  border: 1px solid var(--flx-bdr);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.flx-card-icon svg { width: 21px; height: 21px; }
+.flx-card-label {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: .65rem; letter-spacing: 3px;
+  text-transform: uppercase; color: #fff; margin-bottom: 8px;
+}
+.flx-card-head {
+  font-size: .97rem; font-weight: 600;
+  color: var(--flx-cyan); margin-bottom: 10px; line-height: 1.3;
+}
+.flx-card-body { font-size: .83rem; color: var(--flx-body); line-height: 1.7; }
+
+/* ── How It Works ────────────────────────────────────────────────────────── */
+.flx-s-how {
+  background: var(--flx-surf2);
+  border-top: 1px solid var(--flx-bdr);
+}
+.flx-steps {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 0; margin-top: 56px; position: relative;
+}
+.flx-steps::before {
+  content: ''; position: absolute;
+  top: 35px; left: 16.66%; right: 16.66%; height: 1px;
+  background: linear-gradient(90deg, var(--flx-cyan), rgba(0,240,255,.25), var(--flx-cyan));
+}
+.flx-step { padding: 0 30px; text-align: center; }
+.flx-step-num {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 1px solid var(--flx-cyan);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 26px;
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.25rem; font-weight: 700; color: var(--flx-cyan);
+  background: rgba(0,240,255,.04);
+  box-shadow: 0 0 22px rgba(0,240,255,.1), inset 0 0 20px rgba(0,240,255,.04);
+  position: relative; z-index: 1;
+}
+.flx-step-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+.flx-step-body { font-size: .84rem; color: var(--flx-body); line-height: 1.7; }
+
+/* ── Stats ───────────────────────────────────────────────────────────────── */
+.flx-s-stats {
+  background: var(--flx-surf1);
+  border-top: 1px solid var(--flx-bdr);
+  border-bottom: 1px solid var(--flx-bdr);
+}
+.flx-stats-row { display: grid; grid-template-columns: repeat(4,1fr); }
+.flx-stat {
+  padding: 52px 36px; text-align: center;
+  border-right: 1px solid var(--flx-bdr);
+}
+.flx-stat:last-child { border-right: none; }
+.flx-stat-num {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 2.3rem; font-weight: 700;
+  color: var(--flx-cyan); line-height: 1; margin-bottom: 10px;
+}
+.flx-stat-num sup { font-size: 1.1rem; color: #fff; vertical-align: super; }
+.flx-stat-label {
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .68rem; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--flx-muted);
+}
+
+/* ── CTA ─────────────────────────────────────────────────────────────────── */
+.flx-s-cta { background: var(--flx-surf2); }
+.flx-cta-box { max-width: 780px; margin: 0 auto; padding: 96px 44px; text-align: center; }
+.flx-cta-title { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 18px; }
+.flx-cta-title em { color: var(--flx-cyan); font-style: normal; }
+.flx-cta-desc { color: var(--flx-body); font-size: .97rem; line-height: 1.75; margin-bottom: 38px; }
+.flx-cta-btn {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: .8rem; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: #000; background: var(--flx-cyan);
+  border: none; padding: 18px 52px;
+  cursor: pointer; text-decoration: none;
+  display: inline-block; transition: all .3s;
+}
+.flx-cta-btn:hover { background: #fff; box-shadow: 0 0 50px rgba(0,240,255,.45); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.flx-footer {
+  position: relative; z-index: 1;
+  background: rgba(0,0,0,.96);
+  border-top: 1px solid var(--flx-bdr);
+  padding: 50px 48px 28px;
+}
+.flx-footer-in { max-width: 1200px; margin: 0 auto; }
+.flx-footer-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(0,240,255,.07); margin-bottom: 28px;
+}
+.flx-f-brand {
+  font-family: var(--font-exo2), 'Exo 2', sans-serif;
+  font-size: 1.55rem; font-weight: 800; color: #fff;
+}
+.flx-f-brand span { color: var(--flx-cyan); }
+.flx-f-tag {
+  color: var(--flx-muted);
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .66rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 7px;
+}
+.flx-f-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+.flx-f-links a {
+  color: var(--flx-muted); text-decoration: none;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
+  font-size: .68rem; letter-spacing: 2px; text-transform: uppercase; transition: color .25s;
+}
+.flx-f-links a:hover { color: var(--flx-cyan); }
+.flx-footer-bot { display: flex; justify-content: space-between; align-items: center; }
+.flx-f-copy { color: rgba(255,255,255,.2); font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace; font-size: .64rem; letter-spacing: 1.5px; }
+.flx-f-powered { color: rgba(0,240,255,.25); font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace; font-size: .64rem; letter-spacing: 2px; }
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes flxNeonPulse {
+  0%   { filter: drop-shadow(0 0 6px rgba(0,240,255,.5)) drop-shadow(0 0 16px rgba(0,240,255,.3)); }
+  100% { filter: drop-shadow(0 0 18px rgba(0,240,255,1)) drop-shadow(0 0 42px rgba(0,240,255,.65)) drop-shadow(0 0 80px rgba(0,240,255,.3)); }
+}
+@keyframes flxShimmer {
+  0%,100% { opacity: .2; filter: blur(1.8px) brightness(.9); }
+  50%      { opacity: .38; filter: blur(1.4px) brightness(1.2); }
+}
+@keyframes flxFadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes flxBounce {
+  0%,100% { transform: rotate(45deg) translateY(0); opacity: .9; }
+  50%      { transform: rotate(45deg) translateY(7px); opacity: .4; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .flx-cards-grid, .flx-steps, .flx-stats-row { grid-template-columns: repeat(2,1fr); }
+  .flx-steps::before { display: none; }
+  .flx-stat:nth-child(2) { border-right: none; }
+  .flx-logo { font-size: 4.2rem; }
+  .flx-nav-links { display: none; }
+  .flx-footer-top { flex-direction: column; gap: 22px; }
+  .flx-f-links { flex-wrap: wrap; gap: 16px; }
+}
+@media (max-width: 560px) {
+  .flx-cards-grid { grid-template-columns: 1fr; }
+  .flx-logo { font-size: 2.8rem; }
+  .flx-wrap { padding: 60px 20px; }
+  .flx-navbar { padding: 0 20px; }
+  .flx-sec-title { font-size: 1.6rem; }
+  .flx-cta-title { font-size: 1.8rem; }
+  .flx-stat-num { font-size: 1.8rem; }
+}

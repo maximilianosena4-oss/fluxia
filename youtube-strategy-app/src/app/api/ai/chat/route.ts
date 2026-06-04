@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { retrieveContext, buildRAGPrompt } from "@/lib/ai/rag";
-import { NEXUS_SYSTEM_PROMPT, buildUserContext } from "@/lib/ai/prompts";
+import { FLUXIA_SYSTEM_PROMPT, buildUserContext } from "@/lib/ai/prompts";
 import { sanitizeForLLM } from "@/lib/security/sanitize";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rateLimit";
 import { logAuditEvent } from "@/lib/security/audit";
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     lastActions:   context?.lastCompletedActions ?? [],
   });
 
-  const systemPrompt = NEXUS_SYSTEM_PROMPT.replace("{{USER_CONTEXT}}", userCtx);
+  const systemPrompt = FLUXIA_SYSTEM_PROMPT.replace("{{USER_CONTEXT}}", userCtx);
   const fullPrompt = buildRAGPrompt(systemPrompt, ragChunks);
 
   // ─── Streaming SSE ────────────────────────────────────────
@@ -193,7 +193,7 @@ async function streamMockResponse(
 
 **RECOMENDACIÓN:** ${
     userMessage.toLowerCase().includes("nicho")
-      ? "Validá tu nicho con el Evaluador de NEXUS antes de cualquier otra acción. Un nicho mal elegido arruina todo lo que construís encima."
+      ? "Validá tu nicho con el Evaluador de FluxIA antes de cualquier otra acción. Un nicho mal elegido arruina todo lo que construís encima."
       : userMessage.toLowerCase().includes("video") || userMessage.toLowerCase().includes("contenido")
       ? "Aplicá la estructura de MrBeast: Gancho (0-30s) → Problema → Solución → CTA. El thumbnail vale más que el contenido en sí."
       : userMessage.toLowerCase().includes("monetiz") || userMessage.toLowerCase().includes("dinero")
@@ -203,13 +203,13 @@ async function streamMockResponse(
 
 **ACCIÓN SIGUIENTE:** ${
     userMessage.toLowerCase().includes("nicho")
-      ? "Usá el Evaluador de NEXUS (/dashboard/evaluator). Tardás menos de 10 minutos y obtenés un score de 0-96."
+      ? "Usá el Evaluador de FluxIA (/dashboard/evaluator). Tardás menos de 10 minutos y obtenés un score de 0-96."
       : "Evaluá tu nicho en /dashboard/evaluator si aún no lo hiciste. Después volvé con preguntas más específicas."
   }
 
 **TIEMPO ESTIMADO:** 10-15 minutos.
 
-**HERRAMIENTA:** NEXUS Evaluador + YouTube API (modo mock hasta que configures YOUTUBE_API_KEY).
+**HERRAMIENTA:** FluxIA Evaluador + YouTube API (modo mock hasta que configures YOUTUBE_API_KEY).
 
 **FUENTE:** ${authorName} — "${sourceText}..."
 
