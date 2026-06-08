@@ -25,10 +25,11 @@ model User {
   createdAt  DateTime @default(now())
   lastActive DateTime @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  channels  Channel[]
-  auditLogs AuditLog[]
+  accounts         Account[]
+  sessions         Session[]
+  channels         Channel[]
+  auditLogs        AuditLog[]
+  contentPipelines ContentPipeline[]
 
   @@map("users")
 }
@@ -151,6 +152,31 @@ model AuditLog {
 
   @@index([userId, timestamp])
   @@map("audit_logs")
+}
+
+// ─── Content Pipeline ────────────────────────────────────────
+
+model ContentPipeline {
+  id              String   @id @default(cuid())
+  userId          String
+  topic           String
+  niche           String
+  style           String
+  referenceVideos Json?
+  outline         Json?
+  script          Json?
+  titles          Json?
+  thumbnail       Json?
+  seo             Json?
+  status          String   @default("draft")
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("content_pipelines")
 }
 
 // ─── RAG — Knowledge Embeddings ──────────────────────────────

@@ -47,3 +47,5 @@ screenshots/*.jpg
 # Playwright
 playwright-report/
 test-results/
+
+.vercel

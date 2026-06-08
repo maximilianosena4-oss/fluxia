@@ -26,6 +26,7 @@ export interface YouTubeVideo {
   duration: string;
   publishedAt: string;
   tags: string[];
+  topicCategories?: string[];
 }
 
 export interface YouTubeSearchResult {

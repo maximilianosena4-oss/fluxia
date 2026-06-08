@@ -3,23 +3,14 @@
 // Sesión en cookie HttpOnly, firmada con AUTH_SECRET
 
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/db/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
+  ...authConfig,
   session: {
     strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7, // 7 días
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
   },
   callbacks: {
     async jwt({ token, user, account }) {
