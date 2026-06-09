@@ -37,9 +37,6 @@ const corsHeaders = (origin: string) => [
 ];
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: process.cwd(),
-  },
   async headers() {
     const apiCorsRules = ALLOWED_ORIGINS.map((origin) => ({
       source: "/api/(.*)",
